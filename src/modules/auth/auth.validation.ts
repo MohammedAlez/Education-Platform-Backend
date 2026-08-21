@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { email, z } from "zod";
 
 export const registerSchoolSchema = z.object({
   school: z.object({
@@ -16,6 +16,16 @@ export const registerSchoolSchema = z.object({
   }),
 });
 
+
+export const loginSchema = z.object({
+    email: z.string().trim().email(),
+    password: z.string().min(1),
+});
+
 export type RegisterSchoolInput = z.infer<
   typeof registerSchoolSchema
+>;
+
+export type LoginInput = z.infer<
+    typeof loginSchema
 >;

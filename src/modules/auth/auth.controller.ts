@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { registerSchoolSchema } from "./auth.validation";
-import { registerSchool } from "./auth.service";
+import { loginSchema, registerSchoolSchema } from "./auth.validation";
+import { login, registerSchool } from "./auth.service";
 
 export const registerSchoolController = async (
   req: Request,
@@ -13,6 +13,20 @@ export const registerSchoolController = async (
 
   return res.status(201).json({
     message: "School registered successfully",
+    data: result,
+  });
+};
+
+export const loginController = async (
+  req: Request,
+  res: Response
+) => {
+  const data = loginSchema.parse(req.body);
+
+  const result = await login(data);
+
+  return res.status(200).json({
+    message: "Login successful",
     data: result,
   });
 };
