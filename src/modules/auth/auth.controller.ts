@@ -6,6 +6,7 @@ export const registerSchoolController = async (
   req: Request,
   res: Response
 ) => {
+    
   const data = registerSchoolSchema.parse(req.body);
 
   const result = await registerSchool(data);
