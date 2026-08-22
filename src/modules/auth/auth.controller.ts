@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { loginSchema, refreshTokenSchema, registerSchoolSchema } from "./auth.validation";
-import { login, refreshAccessToken, registerSchool } from "./auth.service";
+import { getCurrentUser, login, refreshAccessToken, registerSchool } from "./auth.service";
+import type { AuthenticatedRequest } from "../../middleware/authenticate";
 
 export const registerSchoolController = async (
   req: Request,
@@ -42,5 +43,16 @@ export const refreshTokenController = async (
   return res.status(200).json({
     message: "Token refreshed successfully",
     data: result,
+  });
+};
+
+export const meController = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const user = await getCurrentUser(req.user!.userId);
+
+  return res.status(200).json({
+    data: user,
   });
 };

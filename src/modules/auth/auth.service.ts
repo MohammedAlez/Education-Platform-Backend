@@ -266,3 +266,31 @@ export const refreshAccessToken = async (
     refreshToken: newRefreshToken,
   };
 };
+
+export const getCurrentUser = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      school: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+    schoolId: user.schoolId,
+    school: {
+      id: user.school.id,
+      name: user.school.name,
+      status: user.school.status,
+    },
+  };
+};

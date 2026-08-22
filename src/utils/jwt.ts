@@ -1,12 +1,14 @@
 import jwt from "jsonwebtoken";
 
-interface AccessTokenPayload {
+export interface AccessTokenPayload {
   userId: string;
   role: "ADMIN" | "TEACHER" | "STUDENT";
   schoolId: string;
 }
 
-interface RefreshTokenPayload {
+
+
+export interface RefreshTokenPayload {
   userId: string;
 }
 
@@ -35,3 +37,13 @@ export const verifyRefreshToken = (
     process.env.JWT_REFRESH_SECRET!
   ) as RefreshTokenPayload;
 };
+
+
+export const verifyAccessToken = (
+  token:string
+): AccessTokenPayload => {
+    return jwt.verify(
+      token,
+      process.env.JWT_ACCESS_SECRET!
+    ) as AccessTokenPayload;
+}
