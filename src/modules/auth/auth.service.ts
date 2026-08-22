@@ -7,7 +7,7 @@ import {
   verifyRefreshToken,
 } from "../../utils/jwt";
 import { hashToken } from "../../utils/token";
-
+import crypto from "crypto";
 
 export const registerSchool = async (
   data: RegisterSchoolInput
@@ -293,4 +293,93 @@ export const getCurrentUser = async (userId: string) => {
       status: user.school.status,
     },
   };
+};
+
+export const logout = async (
+  userId: string,
+  refreshToken: string
+) => {
+  const refreshTokenHash = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
+
+  const storedToken = await prisma.refreshToken.findFirst({
+    where: {
+      userId,
+      tokenHash: refreshTokenHash,
+    },
+  });
+
+  if (!storedToken) {
+    return;
+  }
+
+  if (storedToken.revokedAt) {
+    return;
+  }
+
+  await prisma.refreshToken.update({
+    where: {
+      id: storedToken.id,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
+  });
+};
+
+export const changePassword = async (
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+      passwordHash: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(
+    currentPassword,
+    user.passwordHash
+  );
+
+  if (!isPasswordCorrect) {
+    throw new Error("Current password is incorrect");
+  }
+
+  const newPasswordHash = await bcrypt.hash(
+    newPassword,
+    12
+  );
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        passwordHash: newPasswordHash,
+      },
+    });
+
+    await tx.refreshToken.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+  });
 };

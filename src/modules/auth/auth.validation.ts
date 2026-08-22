@@ -37,3 +37,21 @@ export type LoginInput = z.infer<
 export type RefreshTokenInput = z.infer<
   typeof refreshTokenSchema
 >;
+
+export const logoutSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(8).max(100),
+  })
+  .refine(
+    (data) => data.currentPassword !== data.newPassword,
+    {
+      message:
+        "New password must be different from current password",
+      path: ["newPassword"],
+    }
+  );

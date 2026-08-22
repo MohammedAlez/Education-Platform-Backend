@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { loginSchema, refreshTokenSchema, registerSchoolSchema } from "./auth.validation";
-import { getCurrentUser, login, refreshAccessToken, registerSchool } from "./auth.service";
+import { changePasswordSchema, loginSchema, logoutSchema, refreshTokenSchema, registerSchoolSchema } from "./auth.validation";
+import { changePassword, getCurrentUser, login, logout, refreshAccessToken, registerSchool } from "./auth.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 
 export const registerSchoolController = async (
@@ -54,5 +54,38 @@ export const meController = async (
 
   return res.status(200).json({
     data: user,
+  });
+};
+
+export const logoutController = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { refreshToken } = logoutSchema.parse(req.body);
+
+  const userId = req.user!.userId;
+
+  await logout(userId, refreshToken);
+
+  return res.status(204).send();
+};
+
+export const changePasswordController = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { currentPassword, newPassword } =
+    changePasswordSchema.parse(req.body);
+
+  const userId = req.user!.userId;
+
+  await changePassword(
+    userId,
+    currentPassword,
+    newPassword
+  );
+
+  return res.status(200).json({
+    message: "Password changed successfully",
   });
 };

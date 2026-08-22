@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import { loginController, meController, refreshTokenController, registerSchoolController } from "./auth.controller";
+import { changePasswordController, loginController, logoutController, meController, refreshTokenController, registerSchoolController } from "./auth.controller";
 import { authenticate } from "../../middleware/authenticate";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 import { authorize } from "../../middleware/authorize";
@@ -11,6 +11,7 @@ router.post("/register-school", registerSchoolController);
 router.post("/login",loginController)
 router.post("/refresh",refreshTokenController)
 router.get("/me", authenticate, meController)
+
 router.get(
   "/admin-test",
   authenticate,
@@ -20,6 +21,18 @@ router.get(
       message: "You are an admin!",
     });
   }
+);
+
+router.post(
+  "/logout",
+  authenticate,
+  logoutController
+);
+
+router.post(
+  "/change-password",
+  authenticate,
+  changePasswordController
 );
 
 export default router;
