@@ -106,6 +106,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  refreshTokens RefreshToken[]
   school  School   @relation(fields: [schoolId], references: [id])
   student Student?
   teacher Teacher?
@@ -266,4 +267,20 @@ model TeachingAssignment {
   @@index([teacherId])
   @@index([subjectId])
   @@index([classId])
+}
+
+
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }

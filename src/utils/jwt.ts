@@ -25,3 +25,13 @@ export const generateRefreshToken = (
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
   });
 };
+
+
+export const verifyRefreshToken = (
+  token: string
+): RefreshTokenPayload => {
+  return jwt.verify(
+    token,
+    process.env.JWT_REFRESH_SECRET!
+  ) as RefreshTokenPayload;
+};

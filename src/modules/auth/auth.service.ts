@@ -1,10 +1,12 @@
 import bcrypt from "bcrypt";
-import type { LoginInput, RegisterSchoolInput } from "./auth.validation";
+import type { LoginInput, RefreshTokenInput, RegisterSchoolInput } from "./auth.validation";
 import { prisma } from "../../lib/prisma";
 import {
   generateAccessToken,
   generateRefreshToken,
+  verifyRefreshToken,
 } from "../../utils/jwt";
+import { hashToken } from "../../utils/token";
 
 
 export const registerSchool = async (
@@ -120,6 +122,19 @@ export const login = async (data: LoginInput) => {
     userId: user.id,
   });
 
+  const tokenHash = hashToken(refreshToken);
+
+    await prisma.refreshToken.create({
+    data: {
+      tokenHash,
+      userId: user.id,
+      expiresAt: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000
+      ),
+    },
+  });
+
+
   return {
     accessToken,
     refreshToken,
@@ -130,5 +145,124 @@ export const login = async (data: LoginInput) => {
       status: user.status,
       schoolId: user.schoolId,
     },
+  };
+};
+
+
+
+export const refreshAccessToken = async (
+  data: RefreshTokenInput
+) => {
+  const { refreshToken } = data;
+
+  let payload: { userId: string };
+
+  try {
+    payload = verifyRefreshToken(refreshToken);
+  } catch {
+    throw new Error("Invalid or expired refresh token");
+  }
+
+  const tokenHash = hashToken(refreshToken);
+
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: {
+      tokenHash,
+    },
+    include: {
+      user: {
+        include: {
+          school: true,
+        },
+      },
+    },
+  });
+
+  if (!storedToken) {
+    throw new Error("Invalid refresh token");
+  }
+
+  const user = storedToken.user;
+
+  /*
+   * Refresh-token reuse detection
+   */
+  if (storedToken.revokedAt !== null) {
+    await prisma.refreshToken.updateMany({
+      where: {
+        userId: user.id,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+
+    throw new Error(
+      "Refresh token reuse detected. Please log in again."
+    );
+  }
+
+  /*
+   * Make sure the user and school are still active.
+   */
+  if (user.status !== "ACTIVE") {
+    throw new Error("Your account is inactive");
+  }
+
+  if (user.school.status !== "ACTIVE") {
+    throw new Error("Your school account is inactive");
+  }
+
+  /*
+   * Make sure the token belongs to the user
+   * contained in the JWT.
+   */
+  if (storedToken.userId !== payload.userId) {
+    throw new Error("Invalid refresh token");
+  }
+
+  /*
+   * Generate new tokens.
+   */
+  const newAccessToken = generateAccessToken({
+    userId: user.id,
+    role: user.role,
+    schoolId: user.schoolId,
+  });
+
+  const newRefreshToken = generateRefreshToken({
+    userId: user.id,
+  });
+
+  const newTokenHash = hashToken(newRefreshToken);
+
+  /*
+   * Rotate refresh token atomically.
+   */
+  await prisma.$transaction(async (tx) => {
+    await tx.refreshToken.update({
+      where: {
+        id: storedToken.id,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+
+    await tx.refreshToken.create({
+      data: {
+        tokenHash: newTokenHash,
+        userId: user.id,
+        expiresAt: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000
+        ),
+      },
+    });
+  });
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
   };
 };

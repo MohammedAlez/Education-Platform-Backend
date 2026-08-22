@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { loginSchema, registerSchoolSchema } from "./auth.validation";
-import { login, registerSchool } from "./auth.service";
+import { loginSchema, refreshTokenSchema, registerSchoolSchema } from "./auth.validation";
+import { login, refreshAccessToken, registerSchool } from "./auth.service";
 
 export const registerSchoolController = async (
   req: Request,
@@ -27,6 +27,20 @@ export const loginController = async (
 
   return res.status(200).json({
     message: "Login successful",
+    data: result,
+  });
+};
+
+export const refreshTokenController = async (
+  req: Request,
+  res: Response
+) => {
+  const data = refreshTokenSchema.parse(req.body);
+
+  const result = await refreshAccessToken(data);
+
+  return res.status(200).json({
+    message: "Token refreshed successfully",
     data: result,
   });
 };
