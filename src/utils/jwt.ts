@@ -1,16 +1,6 @@
 import jwt from "jsonwebtoken";
+import type { AccessTokenPayload, RefreshTokenPayload } from "../types/auth";
 
-export interface AccessTokenPayload {
-  userId: string;
-  role: "ADMIN" | "TEACHER" | "STUDENT";
-  schoolId: string;
-}
-
-
-
-export interface RefreshTokenPayload {
-  userId: string;
-}
 
 export const generateAccessToken = (
   payload: AccessTokenPayload

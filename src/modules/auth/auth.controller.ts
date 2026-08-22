@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { loginSchema, refreshTokenSchema, registerSchoolSchema } from "./auth.validation";
 import { getCurrentUser, login, refreshAccessToken, registerSchool } from "./auth.service";
-import type { AuthenticatedRequest } from "../../middleware/authenticate";
+import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 
 export const registerSchoolController = async (
   req: Request,

@@ -1,11 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
-import { verifyAccessToken, type AccessTokenPayload } from "../utils/jwt";
+import { verifyAccessToken, } from "../utils/jwt";
+import type { AuthenticatedRequest } from "../utils/extendedRequests";
 
 
-
-export interface AuthenticatedRequest extends Request {
-  user?: AccessTokenPayload;
-}
 
 
 export const authenticate = (
