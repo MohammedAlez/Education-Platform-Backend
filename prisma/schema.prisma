@@ -89,11 +89,14 @@ model School {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  
   users     User[]
   students  Student[]
   teachers  Teacher[]
   classes   Class[]
   subjects  Subject[]
+  enrollments Enrollment[]
+  teachingAssignments TeachingAssignment[]
 }
 
 model User {
@@ -173,15 +176,18 @@ model Class {
 
 model Enrollment {
   id         String           @id @default(cuid())
+  schoolId String
   studentId  String
   classId    String
   enrolledAt DateTime         @default(now())
   status     EnrollmentStatus @default(ACTIVE)
 
+  school School @relation(fields: [schoolId], references: [id])
   student Student @relation(fields: [studentId], references: [id])
   class   Class   @relation(fields: [classId], references: [id])
 
   @@unique([studentId, classId])
+  @@index([schoolId])
 }
 
 model Subject {
@@ -254,8 +260,10 @@ model TeachingAssignment {
   teacherId String
   subjectId String
   classId   String
+  schoolId String
   createdAt DateTime @default(now())
 
+  school School @relation(fields: [schoolId], references: [id])
   teacher Teacher @relation(fields: [teacherId], references: [id])
   subject Subject @relation(fields: [subjectId], references: [id])
   class   Class   @relation(fields: [classId], references: [id])
@@ -267,6 +275,7 @@ model TeachingAssignment {
   @@index([teacherId])
   @@index([subjectId])
   @@index([classId])
+  @@index([schoolId])
 }
 
 
