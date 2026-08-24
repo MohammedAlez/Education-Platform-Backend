@@ -4,6 +4,7 @@ import studentRoutes from "./modules/students/student.routes";
 import classRoutes from "./modules/classes/class.routes";
 import subjectRoutes from "./modules/subjects/subject.routes";
 import teachingAssignmentRoutes from "./modules/teaching-assignments/teaching-assignments.routes";
+import enrollmentRoutes from "./modules/student-enrollments/student-enrollments.routes";
 import express from "express"
 
 
@@ -20,7 +21,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/teaching-assignments",teachingAssignmentRoutes);
-
+app.use("/api/enrollments",enrollmentRoutes);
 
 app.listen(PORT, ()=>{
     console.log("server is running")
