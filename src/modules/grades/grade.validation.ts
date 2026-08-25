@@ -37,3 +37,25 @@ export const createGradeSchema = z
 export type CreateGradeInput = z.infer<
   typeof createGradeSchema
 >;
+
+export const getGradesQuerySchema = z.object({
+  studentId: z.string().min(1).optional(),
+
+  teachingAssignmentId: z
+    .string()
+    .min(1)
+    .optional(),
+
+  type: z
+    .enum([
+      "QUIZ",
+      "ASSIGNMENT",
+      "TEST",
+      "EXAM",
+    ])
+    .optional(),
+});
+
+export type GetGradesQuery = z.infer<
+  typeof getGradesQuerySchema
+>;

@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { CreateGradeInput } from "./grade.validation";
+import type { CreateGradeInput, GetGradesQuery } from "./grade.validation";
 
 
 
@@ -137,4 +137,88 @@ export const createGrade = async (
   });
 
   return grade;
+};
+
+
+export const getGrades = async (
+  schoolId: string,
+  userId: string,
+  userRole: "ADMIN" | "TEACHER",
+  filters: GetGradesQuery
+) => {
+  const grades = await prisma.grade.findMany({
+    where: {
+      ...(filters.studentId && {
+        studentId: filters.studentId,
+      }),
+
+      ...(filters.teachingAssignmentId && {
+        teachingAssignmentId:
+          filters.teachingAssignmentId,
+      }),
+
+      ...(filters.type && {
+        type: filters.type,
+      }),
+
+      // Make sure the student belongs
+      // to the authenticated user's school
+      student: {
+        schoolId,
+      },
+
+      // Teachers can only see grades
+      // from their own assignments
+      ...(userRole === "TEACHER" && {
+        teachingAssignment: {
+          teacher: {
+            userId,
+            schoolId,
+          },
+        },
+      }),
+    },
+
+    include: {
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+
+      teachingAssignment: {
+        include: {
+          teacher: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          class: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+
+    orderBy: {
+      date: "desc",
+    },
+  });
+
+  return grades;
 };
