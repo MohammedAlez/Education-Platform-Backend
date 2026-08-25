@@ -4,12 +4,14 @@ import type { Response } from "express";
 import {
   createAttendanceSchema,
   getAttendanceQuerySchema,
+  updateAttendanceSchema,
 } from "./attendance.validation";
 
 import {
   createAttendance,
   getAttendance,
   getAttendanceById,
+  updateAttendance,
 } from "./attendance.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 
@@ -78,5 +80,32 @@ export const createAttendanceController =
 
     return res.status(200).json({
       data: attendance,
+    });
+  };
+
+  export const updateAttendanceController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const data =
+      updateAttendanceSchema.parse(req.body);
+
+    const attendanceId = req.params.id as string;
+
+    const user = req.user!;
+
+    const updatedAttendance =
+      await updateAttendance(
+        attendanceId,
+        user.schoolId,
+        user.userId,
+        user.role as "ADMIN" | "TEACHER",
+        data
+      );
+
+    return res.status(200).json({
+      message: "Attendance updated successfully",
+      data: updatedAttendance,
     });
   };

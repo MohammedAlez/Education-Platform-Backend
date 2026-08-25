@@ -38,3 +38,31 @@ export const getAttendanceQuerySchema = z.object({
 export type GetAttendanceQuery = z.infer<
   typeof getAttendanceQuerySchema
 >;
+
+export const updateAttendanceSchema = z
+  .object({
+    status: z
+      .enum([
+        "PRESENT",
+        "ABSENT",
+        "LATE",
+        "EXCUSED",
+      ])
+      .optional(),
+
+    note: z
+      .string()
+      .max(500)
+      .nullable()
+      .optional(),
+  })
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    {
+      message: "At least one field must be provided",
+    }
+  );
+
+export type UpdateAttendanceInput = z.infer<
+  typeof updateAttendanceSchema
+>;

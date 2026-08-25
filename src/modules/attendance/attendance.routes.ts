@@ -7,6 +7,7 @@ import {
   createAttendanceController,
   getAttendanceByIdController,
   getAttendanceController,
+  updateAttendanceController,
 } from "./attendance.controller";
 
 const router = Router();
@@ -30,6 +31,13 @@ router.get(
   authenticate,
   authorize("ADMIN", "TEACHER"),
   getAttendanceByIdController
+);
+
+router.patch(
+  "/:id",
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  updateAttendanceController
 );
 
 export default router;

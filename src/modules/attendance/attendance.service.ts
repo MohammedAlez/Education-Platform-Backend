@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { CreateAttendanceInput, GetAttendanceQuery } from "./attendance.validation";
+import type { CreateAttendanceInput, GetAttendanceQuery, UpdateAttendanceInput } from "./attendance.validation";
 
 
 
@@ -322,4 +322,95 @@ export const getAttendanceById = async (
   }
 
   return attendance;
+};
+
+
+export const updateAttendance = async (
+  attendanceId: string,
+  schoolId: string,
+  userId: string,
+  userRole: "ADMIN" | "TEACHER",
+  data: UpdateAttendanceInput
+) => {
+  const attendance =
+    await prisma.attendance.findFirst({
+      where: {
+        id: attendanceId,
+
+        // Attendance must belong to this school
+        student: {
+          schoolId,
+        },
+
+        // Teachers can only update
+        // their own teaching assignments
+        ...(userRole === "TEACHER" && {
+          teachingAssignment: {
+            teacher: {
+              userId,
+              schoolId,
+            },
+          },
+        }),
+      },
+    });
+
+  if (!attendance) {
+    throw new Error("Attendance not found");
+  }
+
+  const updatedAttendance =
+    await prisma.attendance.update({
+      where: {
+        id: attendanceId,
+      },
+
+      data: {
+        ...(data.status !== undefined && {
+          status: data.status,
+        }),
+
+        ...(data.note !== undefined && {
+          note: data.note,
+        }),
+      },
+
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+
+        teachingAssignment: {
+          include: {
+            teacher: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+
+            class: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+  return updatedAttendance;
 };
