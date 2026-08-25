@@ -15,10 +15,12 @@ export const createClassController = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
+  console.log('receveid')
   const data = createClassSchema.parse(req.body);
 
   const schoolId = req.user!.schoolId;
 
+  console.log("received ")
   const newClass = await createClass(
     schoolId,
     data
