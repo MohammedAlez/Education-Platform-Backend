@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { CreateAttendanceInput } from "./attendance.validation";
+import type { CreateAttendanceInput, GetAttendanceQuery } from "./attendance.validation";
 
 
 
@@ -144,6 +144,99 @@ export const createAttendance = async (
         },
       },
     });
+
+  return attendance;
+};
+
+
+export const getAttendance = async (
+  schoolId: string,
+  filters: GetAttendanceQuery
+) => {
+  let dateFilter;
+
+  if (filters.date) {
+    const startOfDay = new Date(filters.date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    dateFilter = {
+      gte: startOfDay,
+      lt: endOfDay,
+    };
+  }
+
+  const attendance = await prisma.attendance.findMany({
+    where: {
+      ...(filters.studentId && {
+        studentId: filters.studentId,
+      }),
+
+      ...(filters.teachingAssignmentId && {
+        teachingAssignmentId:
+          filters.teachingAssignmentId,
+      }),
+
+      ...(filters.status && {
+        status: filters.status,
+      }),
+
+      ...(dateFilter && {
+        date: dateFilter,
+      }),
+
+      // Scope attendance to the authenticated
+      // user's school
+      student: {
+        schoolId,
+      },
+    },
+
+    include: {
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+        },
+      },
+
+      teachingAssignment: {
+        include: {
+          teacher: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          class: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+
+    orderBy: [
+      {
+        date: "desc",
+      },
+    ],
+  });
 
   return attendance;
 };

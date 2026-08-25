@@ -16,3 +16,25 @@ export const createAttendanceSchema = z.object({
 export type CreateAttendanceInput = z.infer<
   typeof createAttendanceSchema
 >;
+
+
+export const getAttendanceQuerySchema = z.object({
+  studentId: z.string().min(1).optional(),
+
+  teachingAssignmentId: z.string().min(1).optional(),
+
+  status: z
+    .enum([
+      "PRESENT",
+      "ABSENT",
+      "LATE",
+      "EXCUSED",
+    ])
+    .optional(),
+
+  date: z.coerce.date().optional(),
+});
+
+export type GetAttendanceQuery = z.infer<
+  typeof getAttendanceQuerySchema
+>;

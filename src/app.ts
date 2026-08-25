@@ -10,7 +10,7 @@ import express from "express"
 
 
 
-const PORT = process.env.PORT || 3500
+const PORT = process.env.PORT || 5500
 const app = express()
 
 app.use(express.json());
