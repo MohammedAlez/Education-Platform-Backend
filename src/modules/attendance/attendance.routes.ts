@@ -5,6 +5,7 @@ import { authorize } from "../../middleware/authorize";
 
 import {
   createAttendanceController,
+  getAttendanceByIdController,
   getAttendanceController,
 } from "./attendance.controller";
 
@@ -22,6 +23,13 @@ router.get(
   authenticate,
   authorize("ADMIN", "TEACHER"),
   getAttendanceController
+);
+
+router.get(
+  "/:id",
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  getAttendanceByIdController
 );
 
 export default router;

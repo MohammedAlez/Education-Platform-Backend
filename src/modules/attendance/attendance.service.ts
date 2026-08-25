@@ -240,3 +240,86 @@ export const getAttendance = async (
 
   return attendance;
 };
+
+
+export const getAttendanceById = async (
+  attendanceId: string,
+  schoolId: string,
+  userId: string,
+  userRole: "ADMIN" | "TEACHER"
+) => {
+  const attendance =
+    await prisma.attendance.findFirst({
+      where: {
+        id: attendanceId,
+
+        // Attendance must belong to the user's school
+        student: {
+          schoolId,
+        },
+
+        // Teachers can only access their own assignments
+        ...(userRole === "TEACHER" && {
+          teachingAssignment: {
+            teacher: {
+              userId,
+              schoolId,
+            },
+          },
+        }),
+      },
+
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            status: true,
+
+            user: {
+              select: {
+                id: true,
+                email: true,
+              },
+            },
+          },
+        },
+
+        teachingAssignment: {
+          include: {
+            teacher: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+
+            subject: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+
+            class: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+  if (!attendance) {
+    throw new Error("Attendance not found");
+  }
+
+  return attendance;
+};

@@ -9,6 +9,7 @@ import {
 import {
   createAttendance,
   getAttendance,
+  getAttendanceById,
 } from "./attendance.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 
@@ -52,6 +53,28 @@ export const createAttendanceController =
       schoolId,
       filters
     );
+
+    return res.status(200).json({
+      data: attendance,
+    });
+  };
+
+  export const getAttendanceByIdController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const attendanceId = req.params.id as string;
+
+    const user = req.user!;
+
+    const attendance =
+      await getAttendanceById(
+        attendanceId,
+        user.schoolId,
+        user.userId,
+        user.role as "ADMIN" | "TEACHER"
+      );
 
     return res.status(200).json({
       data: attendance,
