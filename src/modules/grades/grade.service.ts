@@ -222,3 +222,84 @@ export const getGrades = async (
 
   return grades;
 };
+
+export const getGradeById = async (
+  gradeId: string,
+  schoolId: string,
+  userId: string,
+  userRole: "ADMIN" | "TEACHER"
+) => {
+  const grade = await prisma.grade.findFirst({
+    where: {
+      id: gradeId,
+
+      // Grade must belong to the user's school
+      student: {
+        schoolId,
+      },
+
+      // Teacher can only access their assignments
+      ...(userRole === "TEACHER" && {
+        teachingAssignment: {
+          teacher: {
+            userId,
+            schoolId,
+          },
+        },
+      }),
+    },
+
+    include: {
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          status: true,
+
+          user: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+        },
+      },
+
+      teachingAssignment: {
+        include: {
+          teacher: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+
+          subject: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+            },
+          },
+
+          class: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!grade) {
+    throw new Error("Grade not found");
+  }
+
+  return grade;
+};

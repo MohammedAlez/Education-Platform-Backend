@@ -9,6 +9,7 @@ import {
 
 import {
   createGrade,
+  getGradeById,
   getGrades,
 } from "./grade.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
@@ -58,5 +59,27 @@ export const createGradeController =
 
     return res.status(200).json({
       data: grades,
+    });
+  };
+
+
+  export const getGradeByIdController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const gradeId = req.params.id as string;
+
+    const user = req.user!;
+
+    const grade = await getGradeById(
+      gradeId,
+      user.schoolId,
+      user.userId,
+      user.role as "ADMIN" | "TEACHER"
+    );
+
+    return res.status(200).json({
+      data: grade,
     });
   };

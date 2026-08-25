@@ -5,6 +5,7 @@ import { authorize } from "../../middleware/authorize";
 
 import {
   createGradeController,
+  getGradeByIdController,
   getGradesController,
 } from "./grade.controller";
 
@@ -23,5 +24,14 @@ router.get(
   authorize("ADMIN", "TEACHER"),
   getGradesController
 );
+
+
+router.get(
+  "/:id",
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  getGradeByIdController
+);
+
 
 export default router;
