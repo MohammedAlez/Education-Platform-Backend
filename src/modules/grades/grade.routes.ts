@@ -7,6 +7,7 @@ import {
   createGradeController,
   getGradeByIdController,
   getGradesController,
+  updateGradeController,
 } from "./grade.controller";
 
 const router = Router();
@@ -33,5 +34,10 @@ router.get(
   getGradeByIdController
 );
 
-
+router.patch(
+  "/:id",
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  updateGradeController
+);
 export default router;

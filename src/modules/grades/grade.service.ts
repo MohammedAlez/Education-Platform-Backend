@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { CreateGradeInput, GetGradesQuery } from "./grade.validation";
+import type { CreateGradeInput, GetGradesQuery, UpdateGradeInput } from "./grade.validation";
 
 
 
@@ -302,4 +302,116 @@ export const getGradeById = async (
   }
 
   return grade;
+};
+
+export const updateGrade = async (
+  gradeId: string,
+  schoolId: string,
+  userId: string,
+  userRole: "ADMIN" | "TEACHER",
+  data: UpdateGradeInput
+) => {
+  const existingGrade =
+    await prisma.grade.findFirst({
+      where: {
+        id: gradeId,
+
+        student: {
+          schoolId,
+        },
+
+        ...(userRole === "TEACHER" && {
+          teachingAssignment: {
+            teacher: {
+              userId,
+              schoolId,
+            },
+          },
+        }),
+      },
+    });
+
+  if (!existingGrade) {
+    throw new Error("Grade not found");
+  }
+
+  // Calculate the final values after the update
+  const finalValue =
+    data.value ?? existingGrade.value;
+
+  const finalMaxValue =
+    data.maxValue ?? existingGrade.maxValue;
+
+  if (finalValue > finalMaxValue) {
+    throw new Error(
+      "Value cannot exceed maxValue"
+    );
+  }
+
+  const updatedGrade =
+    await prisma.grade.update({
+      where: {
+        id: gradeId,
+      },
+
+      data: {
+        ...(data.type !== undefined && {
+          type: data.type,
+        }),
+
+        ...(data.value !== undefined && {
+          value: data.value,
+        }),
+
+        ...(data.maxValue !== undefined && {
+          maxValue: data.maxValue,
+        }),
+
+        ...(data.date !== undefined && {
+          date: data.date,
+        }),
+
+        ...(data.note !== undefined && {
+          note: data.note,
+        }),
+      },
+
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+
+        teachingAssignment: {
+          include: {
+            teacher: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+
+            subject: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+
+            class: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+  return updatedGrade;
 };

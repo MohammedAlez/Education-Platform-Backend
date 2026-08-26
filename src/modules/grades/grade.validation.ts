@@ -59,3 +59,38 @@ export const getGradesQuerySchema = z.object({
 export type GetGradesQuery = z.infer<
   typeof getGradesQuerySchema
 >;
+
+
+export const updateGradeSchema = z
+  .object({
+    type: z
+      .enum([
+        "QUIZ",
+        "ASSIGNMENT",
+        "TEST",
+        "EXAM",
+      ])
+      .optional(),
+
+    value: z.number().min(0).optional(),
+
+    maxValue: z.number().positive().optional(),
+
+    date: z.coerce.date().optional(),
+
+    note: z
+      .string()
+      .max(500)
+      .nullable()
+      .optional(),
+  })
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    {
+      message: "At least one field must be provided",
+    }
+  );
+
+export type UpdateGradeInput = z.infer<
+  typeof updateGradeSchema
+>;

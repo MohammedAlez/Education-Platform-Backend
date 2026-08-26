@@ -5,12 +5,14 @@ import type { Response } from "express";
 import {
   createGradeSchema,
   getGradesQuerySchema,
+  updateGradeSchema,
 } from "./grade.validation";
 
 import {
   createGrade,
   getGradeById,
   getGrades,
+  updateGrade,
 } from "./grade.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 
@@ -81,5 +83,33 @@ export const createGradeController =
 
     return res.status(200).json({
       data: grade,
+    });
+  };
+
+
+  export const updateGradeController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const data =
+      updateGradeSchema.parse(req.body);
+
+    const gradeId = req.params.id as string;
+
+    const user = req.user!;
+
+    const updatedGrade =
+      await updateGrade(
+        gradeId,
+        user.schoolId,
+        user.userId,
+        user.role as "ADMIN" | "TEACHER",
+        data
+      );
+
+    return res.status(200).json({
+      message: "Grade updated successfully",
+      data: updatedGrade,
     });
   };
