@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { CreatePaymentInput, GetPaymentsQuery } from "./payment.validation";
+import type { CreatePaymentInput, GetPaymentsQuery, UpdatePaymentInput } from "./payment.validation";
 
 
 export const createPayment = async (
@@ -163,4 +163,100 @@ export const getPaymentById = async (
   }
 
   return payment;
+};
+
+export const updatePayment = async (
+  paymentId: string,
+  schoolId: string,
+  data: UpdatePaymentInput
+) => {
+  // 1. Find payment and make sure
+  //    it belongs to this school
+  const existingPayment =
+    await prisma.payment.findFirst({
+      where: {
+        id: paymentId,
+
+        student: {
+          schoolId,
+        },
+      },
+    });
+
+  if (!existingPayment) {
+    throw new Error("Payment not found");
+  }
+
+  // 2. Calculate the final status/paidAt
+  const finalStatus =
+  data.status ?? existingPayment.status;
+
+const finalPaidAt =
+  finalStatus === "PAID"
+    ? (data.paidAt ?? existingPayment.paidAt)
+    : null;
+
+  // 3. Validate payment consistency
+  if (
+    finalStatus === "PAID" &&
+    !finalPaidAt
+  ) {
+    throw new Error(
+      "paidAt is required when payment is PAID"
+    );
+  }
+
+  // If payment is no longer PAID,
+  // clear paidAt unless explicitly provided.
+  if (
+    finalStatus !== "PAID" &&
+    data.status === "PAID"
+  ) {
+    // This branch won't normally be reached
+    // because finalStatus would be PAID.
+  }
+
+  const updatedPayment =
+    await prisma.payment.update({
+      where: {
+        id: paymentId,
+      },
+
+        data: {
+        ...(data.amount !== undefined && {
+            amount: data.amount,
+        }),
+
+        ...(data.status !== undefined && {
+            status: data.status,
+        }),
+
+        ...(data.dueDate !== undefined && {
+            dueDate: data.dueDate,
+        }),
+
+        paidAt: finalPaidAt,
+
+        ...(data.paymentMethod !== undefined && {
+            paymentMethod: data.paymentMethod,
+        }),
+
+        ...(data.note !== undefined && {
+            note: data.note,
+        }),
+        },
+
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+  return updatedPayment;
 };

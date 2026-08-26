@@ -5,12 +5,14 @@ import type { Response } from "express";
 import {
   createPaymentSchema,
   getPaymentsQuerySchema,
+  updatePaymentSchema,
 } from "./payment.validation";
 
 import {
   createPayment,
   getPaymentById,
   getPayments,
+  updatePayment,
 } from "./payment.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 
@@ -79,5 +81,34 @@ export const createPaymentController =
 
     return res.status(200).json({
       data: payment,
+    });
+  };
+
+
+  export const updatePaymentController =
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    const data =
+      updatePaymentSchema.parse(
+        req.body
+      );
+
+    const paymentId = req.params.id as string;
+
+    const schoolId =
+      req.user!.schoolId;
+
+    const updatedPayment =
+      await updatePayment(
+        paymentId,
+        schoolId,
+        data
+      );
+
+    return res.status(200).json({
+      message: "Payment updated successfully",
+      data: updatedPayment,
     });
   };

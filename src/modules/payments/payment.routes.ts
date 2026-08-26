@@ -7,6 +7,7 @@ import {
   createPaymentController,
   getPaymentByIdController,
   getPaymentsController,
+  updatePaymentController,
 } from "./payment.controller";
 
 const router = Router();
@@ -33,5 +34,12 @@ router.get(
   getPaymentByIdController
 );
 
+
+router.patch(
+  "/:id",
+  authenticate,
+  authorize("ADMIN"),
+  updatePaymentController
+);
 
 export default router;
