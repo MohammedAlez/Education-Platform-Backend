@@ -7,6 +7,8 @@ import teachingAssignmentRoutes from "./modules/teaching-assignments/teaching-as
 import enrollmentRoutes from "./modules/student-enrollments/student-enrollments.routes";
 import attendancetRoutes from "./modules/attendance/attendance.routes";
 import gradestRoutes from "./modules/grades/grade.routes";
+import paymentRoutes from "./modules/payments/payment.routes";
+
 import express from "express"
 
 
@@ -26,6 +28,7 @@ app.use("/api/teaching-assignments",teachingAssignmentRoutes);
 app.use("/api/enrollments",enrollmentRoutes);
 app.use("/api/attendance",attendancetRoutes);
 app.use("/api/grades",gradestRoutes);
+app.use("/api/payments",paymentRoutes);
 app.get("/hello",(req, res)=>{
     res.send("it's working fine!!")
 });
