@@ -38,3 +38,20 @@ export const createPaymentSchema = z.object({
 export type CreatePaymentInput = z.infer<
   typeof createPaymentSchema
 >;
+
+export const getPaymentsQuerySchema = z.object({
+  studentId: z.string().min(1).optional(),
+
+  status: z
+    .enum([
+      "PENDING",
+      "PAID",
+      "OVERDUE",
+      "CANCELLED",
+    ])
+    .optional(),
+});
+
+export type GetPaymentsQuery = z.infer<
+  typeof getPaymentsQuerySchema
+>;

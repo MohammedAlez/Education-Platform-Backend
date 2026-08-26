@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { CreatePaymentInput } from "./payment.validation";
+import type { CreatePaymentInput, GetPaymentsQuery } from "./payment.validation";
 
 
 export const createPayment = async (
@@ -75,6 +75,92 @@ export const createPayment = async (
         },
       },
     });
+
+  return payment;
+};
+
+
+export const getPayments = async (
+  schoolId: string,
+  filters: GetPaymentsQuery
+) => {
+  const payments =
+    await prisma.payment.findMany({
+      where: {
+        ...(filters.studentId && {
+          studentId: filters.studentId,
+        }),
+
+        ...(filters.status && {
+          status: filters.status,
+        }),
+
+        // Make sure the payment belongs
+        // to a student in this school
+        student: {
+          schoolId,
+        },
+      },
+
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            status: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+  return payments;
+};
+
+export const getPaymentById = async (
+  paymentId: string,
+  schoolId: string
+) => {
+  const payment = await prisma.payment.findFirst({
+    where: {
+      id: paymentId,
+
+      // Payment must belong to a student
+      // in the authenticated admin's school
+      student: {
+        schoolId,
+      },
+    },
+
+    include: {
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          address: true,
+          status: true,
+
+          user: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!payment) {
+    throw new Error("Payment not found");
+  }
 
   return payment;
 };
