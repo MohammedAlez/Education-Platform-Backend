@@ -8,6 +8,7 @@ import {
 } from "../../utils/jwt";
 import { hashToken } from "../../utils/token";
 import crypto from "crypto";
+import { AppError } from "../../errors/app-error";
 
 export const registerSchool = async (
   data: RegisterSchoolInput
@@ -83,33 +84,28 @@ export const login = async (data: LoginInput) => {
   const { email, password } = data;
 
   const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-    include: {
-      school: true,
-    },
+    where: { email },
+    include: { school: true },
   });
 
+  // Generic message for security (don't reveal if email vs password failed)
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new AppError('Invalid email or password', 401);
   }
 
-  if (user.status !== "ACTIVE") {
-    throw new Error("Your account is inactive");
+  // Safe navigation / existence check for user.school
+  if (!user.school || user.school.status !== 'ACTIVE') {
+    throw new AppError('Your school account is inactive', 403);
   }
 
-  if (user.school.status !== "ACTIVE") {
-    throw new Error("Your school account is inactive");
+  if (user.status !== 'ACTIVE') {
+    throw new AppError('Your account is inactive', 403);
   }
 
-  const passwordMatch = await bcrypt.compare(
-    password,
-    user.passwordHash
-  );
+  const passwordMatch = await bcrypt.compare(password, user.passwordHash);
 
   if (!passwordMatch) {
-    throw new Error("Invalid email or password");
+    throw new AppError('Invalid email or password', 401);
   }
 
   const accessToken = generateAccessToken({
@@ -124,16 +120,13 @@ export const login = async (data: LoginInput) => {
 
   const tokenHash = hashToken(refreshToken);
 
-    await prisma.refreshToken.create({
+  await prisma.refreshToken.create({
     data: {
       tokenHash,
       userId: user.id,
-      expiresAt: new Date(
-        Date.now() + 7 * 24 * 60 * 60 * 1000
-      ),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
   });
-
 
   return {
     accessToken,
