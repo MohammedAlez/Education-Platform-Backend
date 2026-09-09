@@ -14,8 +14,9 @@ import {
   updateAttendance,
 } from "./attendance.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
-export const createAttendanceController =
+export const createAttendanceController = asyncHandler(
   async (
     req: AuthenticatedRequest,
     res: Response
@@ -37,9 +38,9 @@ export const createAttendanceController =
       message: "Attendance created successfully",
       data: attendance,
     });
-  };
+});
 
-  export const getAttendanceController =
+export const getAttendanceController = asyncHandler(
   async (
     req: AuthenticatedRequest,
     res: Response
@@ -59,9 +60,9 @@ export const createAttendanceController =
     return res.status(200).json({
       data: attendance,
     });
-  };
+});
 
-  export const getAttendanceByIdController =
+export const getAttendanceByIdController = asyncHandler(
   async (
     req: AuthenticatedRequest,
     res: Response
@@ -81,9 +82,9 @@ export const createAttendanceController =
     return res.status(200).json({
       data: attendance,
     });
-  };
+});
 
-  export const updateAttendanceController =
+export const updateAttendanceController = asyncHandler(
   async (
     req: AuthenticatedRequest,
     res: Response
@@ -108,4 +109,4 @@ export const createAttendanceController =
       message: "Attendance updated successfully",
       data: updatedAttendance,
     });
-  };
+});

@@ -10,8 +10,9 @@ import {
   updateClass,
 } from "./class.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
-export const createClassController = async (
+export const createClassController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -30,10 +31,10 @@ export const createClassController = async (
     message: "Class created successfully",
     data: newClass,
   });
-};
+});
 
 
-export const getClassesController = async (
+export const getClassesController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -44,10 +45,10 @@ export const getClassesController = async (
   return res.status(200).json({
     data: classes,
   });
-};
+});
 
 
-export const getClassByIdController = async (
+export const getClassByIdController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -62,10 +63,10 @@ export const getClassByIdController = async (
   return res.status(200).json({
     data: classItem,
   });
-};
+});
 
 
-export const updateClassController = async (
+export const updateClassController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -84,4 +85,4 @@ export const updateClassController = async (
     message: "Class updated successfully",
     data: updatedClass,
   });
-};
+});

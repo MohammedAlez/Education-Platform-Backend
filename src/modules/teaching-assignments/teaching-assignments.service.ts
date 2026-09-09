@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
 import type { CreateTeachingAssignmentInput, UpdateTeachingAssignmentInput } from "./teaching-assignments.validation";
 
@@ -16,7 +17,7 @@ export const createTeachingAssignment = async (
   });
 
   if (!teacher) {
-    throw new Error("Teacher not found");
+    throw new AppError("Teacher not found", 404);
   }
 
   // Make sure subject belongs to this school
@@ -28,7 +29,7 @@ export const createTeachingAssignment = async (
   });
 
   if (!subject) {
-    throw new Error("Subject not found");
+    throw new AppError("Subject not found", 404);
   }
 
   // Make sure class belongs to this school
@@ -40,7 +41,7 @@ export const createTeachingAssignment = async (
   });
 
   if (!classItem) {
-    throw new Error("Class not found");
+    throw new AppError("Class not found", 404);
   }
 
   // Prevent duplicate assignment
@@ -56,8 +57,9 @@ export const createTeachingAssignment = async (
     });
 
   if (existingAssignment) {
-    throw new Error(
-      "This teaching assignment already exists"
+    throw new AppError(
+      "This teaching assignment already exists",
+      409
     );
   }
 
@@ -204,7 +206,7 @@ export const updateTeachingAssignment = async (
     });
 
   if (!existingAssignment) {
-    throw new Error("Teaching assignment not found");
+    throw new AppError("Teaching assignment not found", 404);
   }
 
   const teacherId =
@@ -225,7 +227,7 @@ export const updateTeachingAssignment = async (
   });
 
   if (!teacher) {
-    throw new Error("Teacher not found");
+    throw new AppError("Teacher not found", 404);
   }
 
   // Validate subject belongs to this school
@@ -237,7 +239,7 @@ export const updateTeachingAssignment = async (
   });
 
   if (!subject) {
-    throw new Error("Subject not found");
+    throw new AppError("Subject not found", 404);
   }
 
   // Validate class belongs to this school
@@ -249,7 +251,7 @@ export const updateTeachingAssignment = async (
   });
 
   if (!classItem) {
-    throw new Error("Class not found");
+    throw new AppError("Class not found", 404);
   }
 
   // Check duplicate combination
@@ -266,8 +268,9 @@ export const updateTeachingAssignment = async (
     });
 
   if (duplicateAssignment) {
-    throw new Error(
-      "This teaching assignment already exists"
+    throw new AppError(
+      "This teaching assignment already exists",
+      409
     );
   }
 

@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
 import type { CreateAttendanceInput, GetAttendanceQuery, UpdateAttendanceInput } from "./attendance.validation";
 
@@ -24,7 +25,7 @@ export const createAttendance = async (
     });
 
   if (!teachingAssignment) {
-    throw new Error("Teaching assignment not found");
+    throw new AppError("Teaching assignment not found", 404);
   }
 
   // 2. If teacher, make sure this is their assignment
@@ -38,8 +39,9 @@ export const createAttendance = async (
     });
 
     if (!teacher) {
-      throw new Error(
-        "You are not authorized to manage this teaching assignment"
+      throw new AppError(
+        "You are not authorized to manage this teaching assignment",
+        403
       );
     }
   }
@@ -54,7 +56,7 @@ export const createAttendance = async (
   });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new AppError("Student not found", 404);
   }
 
   // 4. Make sure the student is enrolled
@@ -69,13 +71,18 @@ export const createAttendance = async (
     });
 
   if (!enrollment) {
-    throw new Error(
-      "Student is not enrolled in this class"
+    throw new AppError(
+      "Student is not enrolled in this class",
+      400
     );
   }
 
   // 5. Normalize the date
   const attendanceDate = new Date(data.date);
+
+  if (isNaN(attendanceDate.getTime())) {
+    throw new AppError("Invalid date provided", 400);
+  }
 
   attendanceDate.setHours(0, 0, 0, 0);
 
@@ -93,8 +100,9 @@ export const createAttendance = async (
     });
 
   if (existingAttendance) {
-    throw new Error(
-      "Attendance already exists for this student on this date"
+    throw new AppError(
+      "Attendance already exists for this student on this date",
+      409
     );
   }
 
@@ -157,6 +165,11 @@ export const getAttendance = async (
 
   if (filters.date) {
     const startOfDay = new Date(filters.date);
+
+    if (isNaN(startOfDay.getTime())) {
+      throw new AppError("Invalid date provided", 400);
+    }
+
     startOfDay.setHours(0, 0, 0, 0);
 
     const endOfDay = new Date(startOfDay);
@@ -318,7 +331,7 @@ export const getAttendanceById = async (
     });
 
   if (!attendance) {
-    throw new Error("Attendance not found");
+    throw new AppError("Attendance record not found", 404);
   }
 
   return attendance;
@@ -356,7 +369,7 @@ export const updateAttendance = async (
     });
 
   if (!attendance) {
-    throw new Error("Attendance not found");
+    throw new AppError("Attendance record not found", 404);
   }
 
   const updatedAttendance =

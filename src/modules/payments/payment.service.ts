@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
 import type { CreatePaymentInput, GetPaymentsQuery, UpdatePaymentInput } from "./payment.validation";
 
@@ -17,13 +18,14 @@ export const createPayment = async (
     });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new AppError("Student not found", 404);
   }
 
   // 2. Validate payment status
   if (data.status === "PAID" && !data.paidAt) {
-    throw new Error(
-      "paidAt is required when payment is PAID"
+    throw new AppError(
+      "paidAt is required when payment is PAID",
+      400
     );
   }
 
@@ -32,8 +34,9 @@ export const createPayment = async (
     data.status !== "PAID" &&
     data.paidAt
   ) {
-    throw new Error(
-      "paidAt can only be provided for PAID payments"
+    throw new AppError(
+      "paidAt can only be provided for PAID payments",
+      400
     );
   }
 

@@ -1,4 +1,5 @@
 
+import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
 import type { CreateEnrollmentInput, GetEnrollmentsQuery, UpdateEnrollmentInput } from "./student-enrollments.validation";
 
@@ -16,7 +17,7 @@ export const createEnrollment = async (
   });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new AppError("Student not found", 404);
   }
 
   // Check class belongs to this school
@@ -28,7 +29,7 @@ export const createEnrollment = async (
   });
 
   if (!classItem) {
-    throw new Error("Class not found");
+    throw new AppError("Class not found", 404);
   }
 
   // Check whether the student is already enrolled
@@ -43,8 +44,9 @@ export const createEnrollment = async (
     });
 
   if (existingEnrollment) {
-    throw new Error(
-      "Student is already enrolled in this class"
+    throw new AppError(
+      "Student is already enrolled in this class",
+      409
     );
   }
 
@@ -178,7 +180,7 @@ export const getEnrollmentById = async (
   });
 
   if (!enrollment) {
-    throw new Error("Enrollment not found");
+    throw new AppError("Enrollment not found", 404);
   }
 
   return enrollment;
@@ -202,7 +204,7 @@ export const updateEnrollment = async (
     });
 
   if (!existingEnrollment) {
-    throw new Error("Enrollment not found");
+    throw new AppError("Enrollment not found", 404);
   }
 
   const updatedEnrollment =

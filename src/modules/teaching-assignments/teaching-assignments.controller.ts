@@ -2,12 +2,13 @@ import type { Response } from "express";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 import { createTeachingAssignmentSchema, updateTeachingAssignmentSchema } from "./teaching-assignments.validation";
 import { createTeachingAssignment, getTeachingAssignmentById, getTeachingAssignments, updateTeachingAssignment } from "./teaching-assignments.service";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
 
 
 
 export const createTeachingAssignmentController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -29,10 +30,10 @@ export const createTeachingAssignmentController =
         "Teaching assignment created successfully",
       data: assignment,
     });
-  };
+  });
 
   export const getTeachingAssignmentsController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -44,10 +45,10 @@ export const createTeachingAssignmentController =
     return res.status(200).json({
       data: assignments,
     });
-  };
+  });
 
   export const getTeachingAssignmentByIdController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -63,12 +64,12 @@ export const createTeachingAssignmentController =
     return res.status(200).json({
       data: assignment,
     });
-  };
+  });
 
 
 
   export const updateTeachingAssignmentController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -92,4 +93,4 @@ export const createTeachingAssignmentController =
         "Teaching assignment updated successfully",
       data: updatedAssignment,
     });
-  };
+  });

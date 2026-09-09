@@ -15,9 +15,10 @@ import {
   updatePayment,
 } from "./payment.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
 export const createPaymentController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -61,10 +62,10 @@ export const createPaymentController =
     return res.status(200).json({
       data: payments,
     });
-  };
+  });
 
   export const getPaymentByIdController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -82,11 +83,11 @@ export const createPaymentController =
     return res.status(200).json({
       data: payment,
     });
-  };
+  });
 
 
   export const updatePaymentController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -111,4 +112,4 @@ export const createPaymentController =
       message: "Payment updated successfully",
       data: updatedPayment,
     });
-  };
+  });

@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/app-error";
 import bcrypt from "bcrypt";
 import { prisma } from "../../lib/prisma";
 import type { CreateStudentInput, UpdateStudentInput } from "./student.validation";
@@ -13,7 +14,7 @@ export const createStudent = async (
   });
 
   if (existingUser) {
-    throw new Error("Email is already registered");
+    throw new AppError("Email is already registered", 409);
   }
 
   const passwordHash = await bcrypt.hash(
@@ -119,7 +120,7 @@ export const getStudentById = async (
   });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new AppError("Student not found", 404);
   }
 
   return {
@@ -154,7 +155,7 @@ export const updateStudent = async (
   });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new AppError("Student not found", 404);
   }
 
   // Check email uniqueness if email is being changed
@@ -166,7 +167,7 @@ export const updateStudent = async (
     });
 
     if (existingUser) {
-      throw new Error("Email is already registered");
+      throw new AppError("Email is already registered", 409);
     }
   }
 

@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
 import type { CreateClassInput, UpdateClassInput } from "./class.validation";
 
@@ -14,7 +15,7 @@ export const createClass = async (
   });
 
   if (existingClass) {
-    throw new Error("Class already exists");
+    throw new AppError("Class already exists", 409);
   }
 
   const newClass = await prisma.class.create({
@@ -120,7 +121,7 @@ export const getClassById = async (
   });
 
   if (!classItem) {
-    throw new Error("Class not found");
+    throw new AppError("Class not found", 404);
   }
 
   return {
@@ -167,7 +168,7 @@ export const updateClass = async (
   });
 
   if (!existingClass) {
-    throw new Error("Class not found");
+    throw new AppError("Class not found", 404);
   }
 
   // If name is being changed, check for duplicates
@@ -186,7 +187,7 @@ export const updateClass = async (
     });
 
     if (duplicateClass) {
-      throw new Error("Class already exists");
+      throw new AppError("Class already exists", 409);
     }
   }
 

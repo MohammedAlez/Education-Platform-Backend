@@ -2,8 +2,9 @@ import type { Response } from "express";
 import { createTeacherSchema, updateTeacherSchema } from "./teacher.validation";
 import { createTeacher, getTeacherById, getTeachers, updateTeacher } from "./teacher.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
-export const createTeacherController = async (
+export const createTeacherController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -20,10 +21,10 @@ export const createTeacherController = async (
     message: "Teacher created successfully",
     data: teacher,
   });
-};
+});
 
 
-export const getTeachersController = async (
+export const getTeachersController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -34,9 +35,9 @@ export const getTeachersController = async (
   return res.status(200).json({
     data: teachers,
   });
-};
+});
 
-export const getTeacherByIdController = async (
+export const getTeacherByIdController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -51,9 +52,9 @@ export const getTeacherByIdController = async (
   return res.status(200).json({
     data: teacher,
   });
-};
+});
 
-export const updateTeacherController = async (
+export const updateTeacherController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -72,4 +73,4 @@ export const updateTeacherController = async (
     message: "Teacher updated successfully",
     data: teacher,
   });
-};
+});

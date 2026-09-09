@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
 import type { CreateSubjectInput, UpdateSubjectInput } from "./subject.validation";
 
@@ -16,7 +17,7 @@ export const createSubject = async (
   });
 
   if (existingSubject) {
-    throw new Error("Subject already exists");
+    throw new AppError("Subject already exists", 409);
   }
 
   const subject = await prisma.subject.create({
@@ -102,7 +103,7 @@ export const getSubjectById = async (
   });
 
   if (!subject) {
-    throw new Error("Subject not found");
+    throw new AppError("Subject not found", 404);
   }
 
   return {
@@ -142,7 +143,7 @@ export const updateSubject = async (
   });
 
   if (!existingSubject) {
-    throw new Error("Subject not found");
+    throw new AppError("Subject not found", 404);
   }
 
   // Check for duplicate name within the same school
@@ -161,7 +162,7 @@ export const updateSubject = async (
     });
 
     if (duplicateSubject) {
-      throw new Error("Subject already exists");
+      throw new AppError("Subject already exists", 409);
     }
   }
 

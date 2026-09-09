@@ -2,8 +2,9 @@ import type { Response } from "express";
 import { createStudentSchema, updateStudentSchema } from "./student.validation";
 import { createStudent, getStudentById, getStudents, updateStudent } from "./student.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
-export const createStudentController = async (
+export const createStudentController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -20,11 +21,11 @@ export const createStudentController = async (
     message: "Student created successfully",
     data: student,
   });
-};
+});
 
 
 
-export const getStudentsController = async (
+export const getStudentsController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -35,9 +36,9 @@ export const getStudentsController = async (
   return res.status(200).json({
     data: students,
   });
-};
+});
 
-export const getStudentByIdController = async (
+export const getStudentByIdController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -52,9 +53,9 @@ export const getStudentByIdController = async (
   return res.status(200).json({
     data: student,
   });
-};
+});
 
-export const updateStudentController = async (
+export const updateStudentController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -73,4 +74,4 @@ export const updateStudentController = async (
     message: "Student updated successfully",
     data: student,
   });
-};
+});

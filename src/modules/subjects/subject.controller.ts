@@ -4,8 +4,9 @@ import type { Response } from "express";
 import { createSubjectSchema, updateSubjectSchema } from "./subject.validation";
 import { createSubject, getSubjectById, getSubjects, updateSubject } from "./subject.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
-export const createSubjectController = async (
+export const createSubjectController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -22,9 +23,9 @@ export const createSubjectController = async (
     message: "Subject created successfully",
     data: subject,
   });
-};
+});
 
-export const getSubjectsController = async (
+export const getSubjectsController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -35,9 +36,9 @@ export const getSubjectsController = async (
   return res.status(200).json({
     data: subjects,
   });
-};
+});
 
-export const getSubjectByIdController = async (
+export const getSubjectByIdController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -55,7 +56,7 @@ export const getSubjectByIdController = async (
 };
 
 
-export const updateSubjectController = async (
+export const updateSubjectController = asyncHandler(async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
@@ -74,4 +75,4 @@ export const updateSubjectController = async (
     message: "Subject updated successfully",
     data: updatedSubject,
   });
-};
+});

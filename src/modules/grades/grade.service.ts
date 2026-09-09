@@ -1,3 +1,4 @@
+import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
 import type { CreateGradeInput, GetGradesQuery, UpdateGradeInput } from "./grade.validation";
 
@@ -22,8 +23,9 @@ export const createGrade = async (
     });
 
   if (!teachingAssignment) {
-    throw new Error(
-      "Teaching assignment not found"
+    throw new AppError(
+      "Teaching assignment not found",
+      404
     );
   }
 
@@ -40,8 +42,9 @@ export const createGrade = async (
       });
 
     if (!teacher) {
-      throw new Error(
-        "You are not authorized to manage this teaching assignment"
+      throw new AppError(
+        "You are not authorized to manage this teaching assignment",
+        403
       );
     }
   }
@@ -56,7 +59,7 @@ export const createGrade = async (
     });
 
   if (!student) {
-    throw new Error("Student not found");
+    throw new AppError("Student not found", 404);
   }
 
   // 4. Student must be enrolled
@@ -71,8 +74,9 @@ export const createGrade = async (
     });
 
   if (!enrollment) {
-    throw new Error(
-      "Student is not enrolled in this class"
+    throw new AppError(
+      "Student is not enrolled in this class",
+      400
     );
   }
 

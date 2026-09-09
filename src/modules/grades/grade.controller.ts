@@ -15,9 +15,10 @@ import {
   updateGrade,
 } from "./grade.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
 export const createGradeController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -37,11 +38,11 @@ export const createGradeController =
       message: "Grade created successfully",
       data: grade,
     });
-  };
+  });
 
 
   export const getGradesController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -62,11 +63,11 @@ export const createGradeController =
     return res.status(200).json({
       data: grades,
     });
-  };
+  });
 
 
   export const getGradeByIdController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -84,11 +85,11 @@ export const createGradeController =
     return res.status(200).json({
       data: grade,
     });
-  };
+  });
 
 
   export const updateGradeController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -112,4 +113,4 @@ export const createGradeController =
       message: "Grade updated successfully",
       data: updatedGrade,
     });
-  };
+  });

@@ -3,11 +3,12 @@ import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 import { createEnrollmentSchema, getEnrollmentsQuerySchema, updateEnrollmentSchema } from "./student-enrollments.validation";
 import { createEnrollment, getEnrollmentById, getEnrollments, updateEnrollment } from "./student-enrollments.service";
 import type { string } from "zod";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
 
 
 export const createEnrollmentController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -27,11 +28,11 @@ export const createEnrollmentController =
       message: "Student enrolled successfully",
       data: enrollment,
     });
-  };
+  });
 
 
   export const getEnrollmentsController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -48,10 +49,10 @@ export const createEnrollmentController =
     return res.status(200).json({
       data: enrollments,
     });
-  };
+  });
 
   export const getEnrollmentByIdController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -67,11 +68,11 @@ export const createEnrollmentController =
     return res.status(200).json({
       data: enrollment,
     });
-  };
+  });
 
 
   export const updateEnrollmentController =
-  async (
+  asyncHandler(async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
@@ -92,4 +93,4 @@ export const createEnrollmentController =
       message: "Enrollment updated successfully",
       data: updatedEnrollment,
     });
-  };
+  });
