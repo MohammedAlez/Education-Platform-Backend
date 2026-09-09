@@ -2,112 +2,86 @@ import type { Request, Response } from "express";
 import { changePasswordSchema, loginSchema, logoutSchema, refreshTokenSchema, registerSchoolSchema } from "./auth.validation";
 import { changePassword, getCurrentUser, login, logout, refreshAccessToken, registerSchool } from "./auth.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
-import { AppError } from "../../errors/app-error";
-import { ZodError } from "zod";
+import { asyncHandler } from "../../middleware/asyncHandler";
 
-export const registerSchoolController = async (
-  req: Request,
-  res: Response
-) => {
-    
-  const data = registerSchoolSchema.parse(req.body);
+export const registerSchoolController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const data = registerSchoolSchema.parse(req.body);
 
-  const result = await registerSchool(data);
+    const result = await registerSchool(data);
 
-  return res.status(201).json({
-    message: "School registered successfully",
-    data: result,
-  });
-};
+    return res.status(201).json({
+      message: "School registered successfully",
+      data: result,
+    });
+  }
+);
 
-export const loginController = async (req: Request, res: Response) => {
-  try {
+export const loginController = asyncHandler(
+  async (req: Request, res: Response) => {
     const data = loginSchema.parse(req.body);
+
     const result = await login(data);
 
     return res.status(200).json({
-      message: 'Login successful',
+      message: "Login successful",
       data: result,
     });
-  } catch (error) {
-    // 1. Handle Zod Schema Validation Errors
-    if (error instanceof ZodError) {
-      return res.status(400).json({
-        message: 'Validation failed',
-        errors: error.flatten().fieldErrors,
-      });
-    }
+  }
+);
 
-    // 2. Handle Known Operational Errors (e.g., AppError)
-    if (error instanceof AppError) {
-      return res.status(error.statusCode).json({
-        message: error.message,
-      });
-    }
+export const refreshTokenController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const data = refreshTokenSchema.parse(req.body);
 
-    // 3. Log Unexpected Internal Errors (e.g., DB down, network fault)
-    console.error('Unhandled Login Error:', error);
+    const result = await refreshAccessToken(data);
 
-    return res.status(500).json({
-      message: 'Internal server error. Please try again later.',
+    return res.status(200).json({
+      message: "Token refreshed successfully",
+      data: result,
     });
   }
-};
+);
 
-export const refreshTokenController = async (
-  req: Request,
-  res: Response
-) => {
-  const data = refreshTokenSchema.parse(req.body);
+export const meController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const user = await getCurrentUser(req.user!.userId);
 
-  const result = await refreshAccessToken(data);
+    return res.status(200).json({
+      data: user,
+    });
+  }
+);
 
-  return res.status(200).json({
-    message: "Token refreshed successfully",
-    data: result,
-  });
-};
+export const logoutController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { refreshToken } = logoutSchema.parse(req.body);
 
-export const meController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const user = await getCurrentUser(req.user!.userId);
+    const userId = req.user!.userId;
 
-  return res.status(200).json({
-    data: user,
-  });
-};
+    await logout(userId, refreshToken);
 
-export const logoutController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const { refreshToken } = logoutSchema.parse(req.body);
+    return res.status(204).send();
+  }
+);
 
-  const userId = req.user!.userId;
+export const changePasswordController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { currentPassword, newPassword } =
+      changePasswordSchema.parse(req.body);
 
-  await logout(userId, refreshToken);
+    const userId = req.user!.userId;
 
-  return res.status(204).send();
-};
+    await changePassword(
+      userId,
+      currentPassword,
+      newPassword
+    );
 
-export const changePasswordController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const { currentPassword, newPassword } =
-    changePasswordSchema.parse(req.body);
+    return res.status(200).json({
+      message: "Password changed successfully",
+    });
+  }
+);
 
-  const userId = req.user!.userId;
 
-  await changePassword(
-    userId,
-    currentPassword,
-    newPassword
-  );
-
-  return res.status(200).json({
-    message: "Password changed successfully",
-  });
-};

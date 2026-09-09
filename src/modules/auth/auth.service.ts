@@ -10,9 +10,7 @@ import { hashToken } from "../../utils/token";
 import crypto from "crypto";
 import { AppError } from "../../errors/app-error";
 
-export const registerSchool = async (
-  data: RegisterSchoolInput
-) => {
+export const registerSchool = async (data: RegisterSchoolInput) => {
   const { school, admin } = data;
 
   const existingUser = await prisma.user.findUnique({
@@ -21,14 +19,18 @@ export const registerSchool = async (
     },
   });
 
-  const existingSchool = await prisma.school.findUnique({
-    where:{
-        email:school.email
-    }
-  })
+  if (existingUser) {
+    throw new AppError("Email is already registered", 409);
+  }
 
-  if (existingUser || existingSchool) {
-    throw new Error("Admin or school email is already registered");
+  const existingSchool = await prisma.school.findUnique({
+    where: {
+      email: school.email,
+    },
+  });
+
+  if (existingSchool) {
+    throw new AppError("School email is already registered", 409);
   }
 
   const passwordHash = await bcrypt.hash(admin.password, 12);
@@ -69,7 +71,6 @@ export const registerSchool = async (
       email: result.school.email,
       status: result.school.status,
     },
-
     admin: {
       id: result.admin.id,
       email: result.admin.email,
@@ -142,7 +143,6 @@ export const login = async (data: LoginInput) => {
 };
 
 
-
 export const refreshAccessToken = async (
   data: RefreshTokenInput
 ) => {
@@ -153,7 +153,7 @@ export const refreshAccessToken = async (
   try {
     payload = verifyRefreshToken(refreshToken);
   } catch {
-    throw new Error("Invalid or expired refresh token");
+    throw new AppError("Invalid or expired refresh token", 401);
   }
 
   const tokenHash = hashToken(refreshToken);
@@ -172,7 +172,7 @@ export const refreshAccessToken = async (
   });
 
   if (!storedToken) {
-    throw new Error("Invalid refresh token");
+    throw new AppError("Invalid refresh token", 401);
   }
 
   const user = storedToken.user;
@@ -191,8 +191,9 @@ export const refreshAccessToken = async (
       },
     });
 
-    throw new Error(
-      "Refresh token reuse detected. Please log in again."
+    throw new AppError(
+      "Refresh token reuse detected. Please log in again.",
+      401
     );
   }
 
@@ -200,11 +201,11 @@ export const refreshAccessToken = async (
    * Make sure the user and school are still active.
    */
   if (user.status !== "ACTIVE") {
-    throw new Error("Your account is inactive");
+    throw new AppError("Your account is inactive", 403);
   }
 
-  if (user.school.status !== "ACTIVE") {
-    throw new Error("Your school account is inactive");
+  if (!user.school || user.school.status !== "ACTIVE") {
+    throw new AppError("Your school account is inactive", 403);
   }
 
   /*
@@ -212,7 +213,7 @@ export const refreshAccessToken = async (
    * contained in the JWT.
    */
   if (storedToken.userId !== payload.userId) {
-    throw new Error("Invalid refresh token");
+    throw new AppError("Invalid refresh token", 401);
   }
 
   /*
@@ -271,7 +272,15 @@ export const getCurrentUser = async (userId: string) => {
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
+  }
+
+  if (user.status !== "ACTIVE") {
+    throw new AppError("Your account is inactive", 403);
+  }
+
+  if (!user.school || user.school.status !== "ACTIVE") {
+    throw new AppError("Your school account is inactive", 403);
   }
 
   return {
@@ -305,11 +314,11 @@ export const logout = async (
   });
 
   if (!storedToken) {
-    return;
+    throw new AppError("Invalid or non-existent refresh token", 404);
   }
 
   if (storedToken.revokedAt) {
-    return;
+    throw new AppError("Token has already been revoked", 400);
   }
 
   await prisma.refreshToken.update({
@@ -334,11 +343,16 @@ export const changePassword = async (
     select: {
       id: true,
       passwordHash: true,
+      status: true,
     },
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
+  }
+
+  if (user.status !== "ACTIVE") {
+    throw new AppError("Your account is inactive", 403);
   }
 
   const isPasswordCorrect = await bcrypt.compare(
@@ -347,7 +361,7 @@ export const changePassword = async (
   );
 
   if (!isPasswordCorrect) {
-    throw new Error("Current password is incorrect");
+    throw new AppError("Current password is incorrect", 400);
   }
 
   const newPasswordHash = await bcrypt.hash(

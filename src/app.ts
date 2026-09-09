@@ -9,6 +9,7 @@ import attendancetRoutes from "./modules/attendance/attendance.routes";
 import gradestRoutes from "./modules/grades/grade.routes";
 import paymentRoutes from "./modules/payments/payment.routes";
 
+import { errorMiddleware } from "./middleware/errorHandler";
 import express from "express"
 
 
@@ -36,3 +37,5 @@ app.get("/hello",(req, res)=>{
 app.listen(PORT, ()=>{
     console.log("server is running on PORT " + PORT)
 })
+
+app.use(errorMiddleware);
