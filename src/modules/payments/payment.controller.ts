@@ -37,10 +37,10 @@ export const createPaymentController =
       message: "Payment created successfully",
       data: payment,
     });
-  };
+  });
 
 
-  export const getPaymentsController =
+  export const getPaymentsController = asyncHandler(
   async (
     req: AuthenticatedRequest,
     res: Response

@@ -53,7 +53,7 @@ export const getSubjectByIdController = asyncHandler(async (
   return res.status(200).json({
     data: subject,
   });
-};
+});
 
 
 export const updateSubjectController = asyncHandler(async (

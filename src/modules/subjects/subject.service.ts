@@ -43,10 +43,29 @@ export const getSubjects = async (schoolId: string) => {
           teachingAssignments: true,
         },
       },
+      teachingAssignments:{
+        select:{
+          id:true,
+          teacher:{
+            select:{
+              id:true,
+              firstName:true,
+              lastName:true
+            }
+          },
+          class:{
+            select:{
+              id:true,
+              name:true
+            }
+          }
+        } 
+      }
     },
     orderBy: {
       createdAt: "desc",
     },
+
   });
 
   return subjects.map((subject) => ({
@@ -57,6 +76,11 @@ export const getSubjects = async (schoolId: string) => {
       subject._count.teachingAssignments,
     createdAt: subject.createdAt,
     updatedAt: subject.updatedAt,
+    teachingAssignments: subject.teachingAssignments.map((assignment) => ({
+      id: assignment.id,
+      teacher: assignment.teacher,
+      class: assignment.class,
+    }))
   }));
 };
 

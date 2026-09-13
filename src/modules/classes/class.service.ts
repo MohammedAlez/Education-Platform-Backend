@@ -43,6 +43,18 @@ export const getClasses = async (schoolId: string) => {
           teachingAssignments: true,
         },
       },
+      teachingAssignments:{
+        select: {
+          id: true,
+          teacher: {
+            select: {
+              id: true, 
+              firstName: true,
+              lastName: true,
+            }
+          }
+        }
+      }
     },
     orderBy: {
       createdAt: "desc",
@@ -58,6 +70,7 @@ export const getClasses = async (schoolId: string) => {
       classItem._count.teachingAssignments,
     createdAt: classItem.createdAt,
     updatedAt: classItem.updatedAt,
+    teachers: classItem.teachingAssignments
   }));
 };
 
