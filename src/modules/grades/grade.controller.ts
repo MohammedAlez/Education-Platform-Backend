@@ -12,6 +12,8 @@ import {
   createGrade,
   getGradeById,
   getGrades,
+  getGradeStats,
+  getStudentAverages,
   updateGrade,
 } from "./grade.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
@@ -41,76 +43,111 @@ export const createGradeController =
   });
 
 
-  export const getGradesController =
-  asyncHandler(async (
-    req: AuthenticatedRequest,
-    res: Response
-  ) => {
-    const filters =
-      getGradesQuerySchema.parse(
-        req.query
-      );
+export const getGradesController =
+asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const filters =
+    getGradesQuerySchema.parse(
+      req.query
+    );
 
+  const user = req.user!;
+
+  const grades = await getGrades(
+    user.schoolId,
+    user.userId,
+    user.role as "ADMIN" | "TEACHER",
+    filters
+  );
+
+  return res.status(200).json({
+    data: grades,
+  });
+});
+
+export const getGradeByIdController =
+asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const gradeId = req.params.id as string;
+
+  const user = req.user!;
+
+  const grade = await getGradeById(
+    gradeId,
+    user.schoolId,
+    user.userId,
+    user.role as "ADMIN" | "TEACHER"
+  );
+
+  return res.status(200).json({
+    data: grade,
+  });
+});
+
+
+export const updateGradeController =
+asyncHandler(async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const data =
+    updateGradeSchema.parse(req.body);
+
+  const gradeId = req.params.id as string;
+
+  const user = req.user!;
+
+  const updatedGrade =
+    await updateGrade(
+      gradeId,
+      user.schoolId,
+      user.userId,
+      user.role as "ADMIN" | "TEACHER",
+      data
+    );
+
+  return res.status(200).json({
+    message: "Grade updated successfully",
+    data: updatedGrade,
+  });
+});
+
+
+// new ones 
+export const getGradeStatsController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+
+    console.log("Received request for grade stats with query:", req.query);
+    const filters = getGradesQuerySchema.parse(req.query);
     const user = req.user!;
 
-    const grades = await getGrades(
+    const stats = await getGradeStats(
       user.schoolId,
       user.userId,
       user.role as "ADMIN" | "TEACHER",
       filters
     );
 
-    return res.status(200).json({
-      data: grades,
-    });
-  });
+    return res.status(200).json({ data: stats });
+  }
+);
 
-
-  export const getGradeByIdController =
-  asyncHandler(async (
-    req: AuthenticatedRequest,
-    res: Response
-  ) => {
-    const gradeId = req.params.id as string;
-
+export const getStudentAveragesController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const filters = getGradesQuerySchema.parse(req.query);
     const user = req.user!;
 
-    const grade = await getGradeById(
-      gradeId,
+    const studentAverages = await getStudentAverages(
       user.schoolId,
       user.userId,
-      user.role as "ADMIN" | "TEACHER"
+      user.role as "ADMIN" | "TEACHER",
+      filters
     );
 
-    return res.status(200).json({
-      data: grade,
-    });
-  });
-
-
-  export const updateGradeController =
-  asyncHandler(async (
-    req: AuthenticatedRequest,
-    res: Response
-  ) => {
-    const data =
-      updateGradeSchema.parse(req.body);
-
-    const gradeId = req.params.id as string;
-
-    const user = req.user!;
-
-    const updatedGrade =
-      await updateGrade(
-        gradeId,
-        user.schoolId,
-        user.userId,
-        user.role as "ADMIN" | "TEACHER",
-        data
-      );
-
-    return res.status(200).json({
-      message: "Grade updated successfully",
-      data: updatedGrade,
-    });
-  });
+    return res.status(200).json({ data: studentAverages });
+  }
+);

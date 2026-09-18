@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GradeType } from "../../../generated/prisma";
 
 export const createGradeSchema = z
   .object({
@@ -39,21 +40,12 @@ export type CreateGradeInput = z.infer<
 >;
 
 export const getGradesQuerySchema = z.object({
-  studentId: z.string().min(1).optional(),
-
-  teachingAssignmentId: z
-    .string()
-    .min(1)
-    .optional(),
-
-  type: z
-    .enum([
-      "QUIZ",
-      "ASSIGNMENT",
-      "TEST",
-      "EXAM",
-    ])
-    .optional(),
+  studentId: z.string().optional(),
+  teachingAssignmentId: z.string().optional(),
+  classId: z.string().optional(),
+  subjectId: z.string().optional(),
+  teacherId: z.string().optional(),
+  type: z.nativeEnum(GradeType).optional(),
 });
 
 export type GetGradesQuery = z.infer<

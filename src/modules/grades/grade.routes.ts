@@ -7,6 +7,8 @@ import {
   createGradeController,
   getGradeByIdController,
   getGradesController,
+  getGradeStatsController,
+  getStudentAveragesController,
   updateGradeController,
 } from "./grade.controller";
 
@@ -26,6 +28,20 @@ router.get(
   getGradesController
 );
 
+// New routes for stats and student averages
+router.get("/stats", 
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  getGradeStatsController
+);
+
+
+router.get("/student-averages", 
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  getStudentAveragesController
+);
+//############ end  of new routes ###############
 
 router.get(
   "/:id",
@@ -40,4 +56,9 @@ router.patch(
   authorize("ADMIN", "TEACHER"),
   updateGradeController
 );
+
+
+
+
+
 export default router;
