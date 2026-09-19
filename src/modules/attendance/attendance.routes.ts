@@ -4,6 +4,7 @@ import { authenticate } from "../../middleware/authenticate";
 import { authorize } from "../../middleware/authorize";
 
 import {
+  bulkUpdateAttendanceController,
   createAttendanceController,
   getAttendanceByIdController,
   getAttendanceController,
@@ -25,6 +26,15 @@ router.get(
   authorize("ADMIN", "TEACHER"),
   getAttendanceController
 );
+
+//  bulk update endpoint for Teacher portal to mark atteandance
+router.patch(
+  "/bulk-update",
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  bulkUpdateAttendanceController
+);
+// ========================================================
 
 router.get(
   "/:id",

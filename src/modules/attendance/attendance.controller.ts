@@ -2,12 +2,14 @@ import type { Response } from "express";
 
 
 import {
+  bulkUpdateAttendanceSchema,
   createAttendanceSchema,
   getAttendanceQuerySchema,
   updateAttendanceSchema,
 } from "./attendance.validation";
 
 import {
+  bulkUpdateAttendance,
   createAttendance,
   getAttendance,
   getAttendanceById,
@@ -110,3 +112,24 @@ export const updateAttendanceController = asyncHandler(
       data: updatedAttendance,
     });
 });
+
+
+
+export const bulkUpdateAttendanceController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const validatedData = bulkUpdateAttendanceSchema.parse(req.body);
+    const user = req.user!;
+
+    const result = await bulkUpdateAttendance(
+      user.schoolId,
+      user.userId,
+      user.role as "ADMIN"|"TEACHER",
+      validatedData
+    );
+
+    return res.status(200).json({
+      message: `${result.length} attendance record(s) updated successfully`,
+      data: result,
+    });
+  }
+);

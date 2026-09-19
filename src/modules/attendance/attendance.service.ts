@@ -1,6 +1,6 @@
 import { AppError } from "../../errors/app-error";
 import { prisma } from "../../lib/prisma";
-import type { CreateAttendanceInput, GetAttendanceQuery, UpdateAttendanceInput } from "./attendance.validation";
+import type { BulkUpdateAttendanceInput, CreateAttendanceInput, GetAttendanceQuery, UpdateAttendanceInput } from "./attendance.validation";
 
 
 
@@ -426,4 +426,84 @@ export const updateAttendance = async (
     });
 
   return updatedAttendance;
+};
+
+export const bulkUpdateAttendance = async (
+  schoolId: string,
+  userId: string,
+  userRole: "ADMIN" | "TEACHER",
+  data: BulkUpdateAttendanceInput
+) => {
+  const attendanceIds = data.records.map((item) => item.id);
+
+  // 1. Retrieve all requested attendance records that pass ownership/role filters
+  const existingRecords = await prisma.attendance.findMany({
+    where: {
+      id: { in: attendanceIds },
+      student: {
+        schoolId,
+      },
+      ...(userRole === "TEACHER" && {
+        teachingAssignment: {
+          teacher: {
+            userId,
+            schoolId,
+          },
+        },
+      }),
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  // Verify that all requested IDs exist and are authorized for this user
+  if (existingRecords.length !== attendanceIds.length) {
+    const foundIds = new Set(existingRecords.map((r) => r.id));
+    const unauthorizedOrMissingIds = attendanceIds.filter(
+      (id) => !foundIds.has(id)
+    );
+
+    throw new AppError(
+      `Unauthorized or non-existent attendance records: ${unauthorizedOrMissingIds.join(", ")}`,
+      403
+    );
+  }
+
+  // 2. Perform updates inside a Prisma transaction
+  const updatedRecords = await prisma.$transaction(async (tx) => {
+    const updatePromises = data.records.map((record) =>
+      tx.attendance.update({
+        where: { id: record.id },
+        data: {
+          ...(record.status !== undefined && { status: record.status }),
+          ...(record.note !== undefined && { note: record.note }),
+        },
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          teachingAssignment: {
+            select: {
+              id: true,
+              subject: {
+                select: { id: true, name: true },
+              },
+              class: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+        },
+      })
+    );
+
+    return Promise.all(updatePromises);
+  });
+
+  return updatedRecords;
 };
