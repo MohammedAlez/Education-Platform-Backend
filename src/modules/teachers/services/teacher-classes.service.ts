@@ -15,13 +15,14 @@ export const getTeacherClasses = async (schoolId: string, userId: string) => {
     throw new AppError("Teacher profile not found", 404);
   }
 
-  // 2. Fetch all teaching assignments for this teacher with class and subject details
+  // 2. Fetch all teaching assignments with teachingAssignmentId (id), class, and subject details
   const teachingAssignments = await prisma.teachingAssignment.findMany({
     where: {
       teacherId: teacher.id,
       schoolId,
     },
     select: {
+      id: true, // Teaching assignment ID
       class: {
         select: {
           id: true,
@@ -47,7 +48,7 @@ export const getTeacherClasses = async (schoolId: string, userId: string) => {
     },
   });
 
-  // 3. Deduplicate classes (a teacher may teach multiple subjects to the same class)
+  // 3. Deduplicate classes and attach teachingAssignmentId to each subject
   const classMap = new Map<
     string,
     {
@@ -55,12 +56,21 @@ export const getTeacherClasses = async (schoolId: string, userId: string) => {
       name: string;
       description: string | null;
       studentsCount: number;
-      subjects: { id: string; name: string }[];
+      subjects: {
+        id: string;
+        name: string;
+        teachingAssignmentId: string;
+      }[];
     }
   >();
 
   teachingAssignments.forEach((ta) => {
     const classId = ta.class.id;
+    const subjectWithAssignment = {
+      id: ta.subject.id,
+      name: ta.subject.name,
+      teachingAssignmentId: ta.id,
+    };
 
     if (!classMap.has(classId)) {
       classMap.set(classId, {
@@ -68,13 +78,13 @@ export const getTeacherClasses = async (schoolId: string, userId: string) => {
         name: ta.class.name,
         description: ta.class.description,
         studentsCount: ta.class._count.enrollments,
-        subjects: [ta.subject],
+        subjects: [subjectWithAssignment],
       });
     } else {
       const existing = classMap.get(classId)!;
       // Prevent duplicate subject entries
       if (!existing.subjects.some((s) => s.id === ta.subject.id)) {
-        existing.subjects.push(ta.subject);
+        existing.subjects.push(subjectWithAssignment);
       }
     }
   });
