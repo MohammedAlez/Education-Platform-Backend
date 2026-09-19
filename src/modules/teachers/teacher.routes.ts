@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTeacherController, getTeacherByIdController, getTeachersController, updateTeacherController } from "./teacher.controller";
+import { createTeacherController, getTeacherByIdController, getTeacherClassesController, getTeachersController, getTeacherStudentsController, updateTeacherController } from "./teacher.controller";
 import { authenticate } from "../../middleware/authenticate";
 import { authorize } from "../../middleware/authorize";
 
@@ -19,6 +19,22 @@ router.get(
   getTeachersController
 );
 
+
+// ============== related to teacher dashboard screens ============== 
+router.get("/students",
+   authenticate,
+   authorize("TEACHER"),
+   getTeacherStudentsController
+);
+
+router.get("/classes",
+   authenticate,
+   authorize("TEACHER"),
+   getTeacherClassesController
+);
+// ==================================================================
+
+
 router.get(
   "/:id",
   authenticate,
@@ -32,5 +48,8 @@ router.patch(
   authorize("ADMIN"),
   updateTeacherController
 );
+
+
+
 
 export default router;

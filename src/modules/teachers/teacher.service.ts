@@ -232,3 +232,4 @@ export const updateTeacher = async (
     createdAt: result.teacher.createdAt,
   };
 };
+

@@ -30,3 +30,15 @@ export const updateTeacherSchema = z
 export type UpdateTeacherInput = z.infer<
   typeof updateTeacherSchema
 >;
+
+
+// ========= used for teacher/students endpoint =============
+
+export const getTeacherStudentsQuerySchema = z.object({
+  search: z.string().optional(),
+  classId: z.string().optional(),
+});
+
+export type GetTeacherStudentsQuery = z.infer<typeof getTeacherStudentsQuerySchema>;
+
+// ===========================================================
