@@ -4,6 +4,7 @@ import { authenticate } from "../../middleware/authenticate";
 import { authorize } from "../../middleware/authorize";
 
 import {
+  bulkUpdateGradeController,
   createGradeController,
   getGradeByIdController,
   getGradesController,
@@ -42,6 +43,17 @@ router.get("/student-averages",
   getStudentAveragesController
 );
 //############ end  of new routes ###############
+
+
+// Bulk Update Endpoint for Teacher Portal
+
+router.patch(
+  "/bulk-update",
+  authenticate,
+  authorize("ADMIN", "TEACHER"),
+  bulkUpdateGradeController
+);
+
 
 router.get(
   "/:id",

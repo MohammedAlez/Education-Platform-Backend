@@ -86,3 +86,35 @@ export const updateGradeSchema = z
 export type UpdateGradeInput = z.infer<
   typeof updateGradeSchema
 >;
+
+
+
+export const bulkUpdateGradeItemSchema = z
+  .object({
+    id: z.string().min(1, "Grade ID is required"),
+    type: z.nativeEnum(GradeType).optional(),
+    value: z.number().min(0).optional(),
+    maxValue: z.number().positive().optional(),
+    date: z.coerce.date().optional(),
+    note: z.string().max(500).nullable().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.value !== undefined && data.maxValue !== undefined) {
+        return data.value <= data.maxValue;
+      }
+      return true;
+    },
+    {
+      message: "Value cannot exceed maxValue",
+      path: ["value"],
+    }
+  );
+
+export const bulkUpdateGradeSchema = z.object({
+  records: z
+    .array(bulkUpdateGradeItemSchema)
+    .min(1, "At least one grade record must be provided"),
+});
+
+export type BulkUpdateGradeInput = z.infer<typeof bulkUpdateGradeSchema>;

@@ -3,6 +3,7 @@ import type { Response } from "express";
 
 
 import {
+  bulkUpdateGradeSchema,
   createGradeSchema,
   getGradesQuerySchema,
   updateGradeSchema,
@@ -18,6 +19,7 @@ import {
 } from "./grade.service";
 import type { AuthenticatedRequest } from "../../utils/extendedRequests";
 import { asyncHandler } from "../../middleware/asyncHandler";
+import { bulkUpdateGrade } from "./services/teacher-bulk-grades.service";
 
 export const createGradeController =
   asyncHandler(async (
@@ -149,5 +151,25 @@ export const getStudentAveragesController = asyncHandler(
     );
 
     return res.status(200).json({ data: studentAverages });
+  }
+);
+
+
+export const bulkUpdateGradeController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const data = bulkUpdateGradeSchema.parse(req.body);
+    const user = req.user!;
+
+    const updatedGrades = await bulkUpdateGrade(
+      user.schoolId,
+      user.userId,
+      user.role as "ADMIN" | "TEACHER",
+      data
+    );
+
+    return res.status(200).json({
+      message: `${updatedGrades.length} grade record(s) updated successfully`,
+      data: updatedGrades,
+    });
   }
 );
