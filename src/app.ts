@@ -9,6 +9,7 @@ import attendancetRoutes from "./modules/attendance/attendance.routes";
 import gradestRoutes from "./modules/grades/grade.routes";
 import paymentRoutes from "./modules/payments/payment.routes";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
+import profileRoutes from "./modules/profile/profile.routes";
 
 import { errorMiddleware } from "./middleware/errorHandler";
 import express from "express"
@@ -32,6 +33,7 @@ app.use("/api/attendance",attendancetRoutes);
 app.use("/api/grades",gradestRoutes);
 app.use("/api/payments",paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/profiles", profileRoutes);
 
 app.get("/hello",(req, res)=>{
     res.send("it's working fine!!")

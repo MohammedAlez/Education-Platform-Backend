@@ -46,6 +46,16 @@ export const registerSchool = async (data: RegisterSchoolInput) => {
       },
     });
 
+    // const createdAdmin = await tx.user.create({
+    //   data: {
+    //     email: admin.email,
+    //     passwordHash,
+    //     role: "ADMIN",
+    //     status: "ACTIVE",
+    //     schoolId: createdSchool.id,
+    //   },
+    // });
+
     const createdAdmin = await tx.user.create({
       data: {
         email: admin.email,
@@ -53,6 +63,15 @@ export const registerSchool = async (data: RegisterSchoolInput) => {
         role: "ADMIN",
         status: "ACTIVE",
         schoolId: createdSchool.id,
+
+        admin: {
+          create: {
+            firstName: admin.firstName,
+            lastName: admin.lastName,
+            phone: admin.phone,
+            schoolId: createdSchool.id,
+          },
+        },
       },
     });
 
@@ -268,6 +287,9 @@ export const getCurrentUser = async (userId: string) => {
     },
     include: {
       school: true,
+      admin: true,
+      teacher: true,
+      student: true,
     },
   });
 
@@ -283,16 +305,48 @@ export const getCurrentUser = async (userId: string) => {
     throw new AppError("Your school account is inactive", 403);
   }
 
+  // return {
+  //   id: user.id,
+  //   email: user.email,
+  //   role: user.role,
+  //   status: user.status,
+  //   schoolId: user.schoolId,
+  //   school: {
+  //     id: user.school.id,
+  //     name: user.school.name,
+  //     status: user.school.status,
+  //   },
+  // };
+
+  const profile =
+    user.role === "ADMIN"
+      ? user.admin
+      : user.role === "TEACHER"
+        ? user.teacher
+        : user.student;
+
   return {
     id: user.id,
     email: user.email,
     role: user.role,
     status: user.status,
     schoolId: user.schoolId,
+
+    profile: profile
+      ? {
+          id: profile.id,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          phone: profile.phone,
+        }
+      : null,
+
     school: {
       id: user.school.id,
       name: user.school.name,
       status: user.school.status,
+      phone: user.school.phone,
+      email: user.school.email
     },
   };
 };

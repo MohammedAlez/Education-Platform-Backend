@@ -13,7 +13,8 @@ export const registerSchoolSchema = z.object({
     lastName: z.string().trim().min(2).max(50),
     email: z.string().trim().email(),
     password: z.string().min(8).max(100),
-  }),
+    phone: z.string().trim().min(8).max(20)
+  })
 });
 
 
