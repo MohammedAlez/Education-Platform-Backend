@@ -78,6 +78,13 @@ export const getStudents = async (schoolId: string) => {
           status: true,
         },
       },
+      enrollments: {
+        select: {
+          id: true,
+          class: true,
+          status: true,
+        }
+      }
     },
     orderBy: {
       createdAt: "desc",
@@ -96,6 +103,7 @@ export const getStudents = async (schoolId: string) => {
       status: student.user.status,
     },
     createdAt: student.createdAt,
+    enrollments: student.enrollments
   }));
 };
 

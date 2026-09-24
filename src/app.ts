@@ -10,6 +10,7 @@ import gradestRoutes from "./modules/grades/grade.routes";
 import paymentRoutes from "./modules/payments/payment.routes";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
 import profileRoutes from "./modules/profile/profile.routes";
+import studentPortalRoutes from "./modules/students/student-portal/student-class.routes";
 
 import { errorMiddleware } from "./middleware/errorHandler";
 import express from "express"
@@ -34,6 +35,13 @@ app.use("/api/grades",gradestRoutes);
 app.use("/api/payments",paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/profiles", profileRoutes);
+
+// student portal routes
+app.use("/api/student/me", studentPortalRoutes);
+
+
+
+
 
 app.get("/hello",(req, res)=>{
     res.send("it's working fine!!")
