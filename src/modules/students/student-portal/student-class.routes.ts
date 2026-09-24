@@ -4,6 +4,7 @@ import { authorize } from "../../../middleware/authorize";
 import {
   getStudentClassesController,
   getStudentClassOverviewController,
+  getStudentClassSubjectsWithGradesController,
 } from "./student-class.controller";
 
 const router = Router();
@@ -16,5 +17,11 @@ router.get("/classes", getStudentClassesController);
 
 // Get detailed class overview by classId
 router.get("/classes/:classId", getStudentClassOverviewController);
+
+// Get subjects list with grades and assessments
+router.get(
+  "/classes/:classId/subjects",
+  getStudentClassSubjectsWithGradesController
+);
 
 export default router;

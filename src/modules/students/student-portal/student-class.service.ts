@@ -1,5 +1,6 @@
 import { AppError } from "../../../errors/app-error";
 import { prisma } from "../../../lib/prisma";
+import { calculateSubjectStats, formatAssessmentType } from "./tools/helper-functions";
 
 
 // 1. Get all enrolled classes for student dropdown
@@ -154,3 +155,97 @@ function getSubjectIcon(subjectName: string): string {
   if (lower.includes("arab")) return "languages";
   return "book-open";
 }
+
+
+
+export const getStudentClassSubjectsWithGrades = async (
+  userId: string,
+  classId: string
+) => {
+  // 1. Resolve Student profile
+  const student = await prisma.student.findUnique({
+    where: { userId },
+    select: { id: true, schoolId: true },
+  });
+
+  if (!student) {
+    throw new AppError("Student profile not found", 404);
+  }
+
+  // 2. Check active enrollment in requested class
+  const enrollment = await prisma.enrollment.findFirst({
+    where: {
+      studentId: student.id,
+      classId,
+      status: "ACTIVE",
+    },
+  });
+
+  if (!enrollment) {
+    throw new AppError("You are not actively enrolled in this class", 403);
+  }
+
+  // 3. Query Teaching Assignments for this class along with subject, teacher, and student grades
+  const teachingAssignments = await prisma.teachingAssignment.findMany({
+    where: {
+      classId,
+      schoolId: student.schoolId,
+    },
+    include: {
+      subject: true,
+      teacher: {
+        include: {
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      },
+      grades: {
+        where: {
+          studentId: student.id,
+        },
+        orderBy: {
+          date: "desc",
+        },
+      },
+    },
+  });
+
+  // 4. Map into desired JSON response payload
+  const subjectsData = teachingAssignments.map((ta) => {
+    const { averageGrade, status } = calculateSubjectStats(ta.grades);
+
+    const assessments = ta.grades.map((grade, idx) => {
+      const { label, weight } = formatAssessmentType(grade.type);
+      return {
+        id: grade.id,
+        title: grade.note || `${label} ${idx + 1}`,
+        type: label,
+        grade: grade.value,
+        maxGrade: grade.maxValue,
+        weight,
+        date: grade.date ? grade.date.toISOString().split("T")[0] : null,
+      };
+    });
+
+    return {
+      subjectId: ta.subject.id,
+      subjectName: ta.subject.name,
+      code: `${ta.subject.name.substring(0, 3).toUpperCase()}101`,
+      teacher: {
+        id: ta.teacher.id,
+        firstName: ta.teacher.firstName,
+        lastName: ta.teacher.lastName,
+        email: ta.teacher.user.email,
+      },
+      averageGrade,
+      maxGrade: 20,
+      status,
+      assessments,
+    };
+  });
+
+  return subjectsData;
+};
