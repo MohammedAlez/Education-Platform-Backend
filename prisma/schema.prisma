@@ -79,6 +79,16 @@ enum UserStatus {
   INACTIVE
 }
 
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
 model School {
   id        String   @id @default(cuid())
   name      String
@@ -288,6 +298,7 @@ model TeachingAssignment {
   subject Subject @relation(fields: [subjectId], references: [id])
   class   Class   @relation(fields: [classId], references: [id])
 
+  schedules  Schedule[]
   attendance Attendance[]
   grades     Grade[]
 
@@ -312,4 +323,22 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Schedule {
+  id                   String             @id @default(cuid())
+  teachingAssignmentId String
+
+  dayOfWeek            DayOfWeek
+  startTime            String             // Format: "HH:mm" (e.g., "08:00")
+  endTime              String             // Format: "HH:mm" (e.g., "10:00")
+  room                 String?
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  teachingAssignment   TeachingAssignment @relation(fields: [teachingAssignmentId], references: [id], onDelete: Cascade)
+
+  @@index([teachingAssignmentId])
+  @@index([dayOfWeek])
 }
