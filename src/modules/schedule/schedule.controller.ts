@@ -7,6 +7,7 @@ import {
   getTeacherSchedule,
   createScheduleSlot,
   deleteScheduleSlot,
+  getAdminSchedules,
 } from "./schedule.service";
 import type { DayOfWeek } from "../../../generated/prisma";
 
@@ -65,6 +66,38 @@ export const deleteScheduleController = asyncHandler(
 
     return res.status(200).json({
       message: "Schedule slot deleted successfully",
+    });
+  }
+);
+
+// GET /api/schedules/admin
+
+export const getAdminSchedulesController = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const schoolId = req.user!.schoolId;
+
+    const { classId, teacherId, room, day } = req.query;
+
+    const schedules = await getAdminSchedules(schoolId, {
+      ...(typeof classId === "string" && {
+        classId,
+      }),
+
+      ...(typeof teacherId === "string" && {
+        teacherId,
+      }),
+
+      ...(typeof room === "string" && {
+        room,
+      }),
+
+      ...(typeof day === "string" && {
+        dayOfWeek: day as DayOfWeek,
+      }),
+    });
+
+    return res.status(200).json({
+      data: schedules,
     });
   }
 );

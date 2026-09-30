@@ -385,3 +385,109 @@ export const deleteScheduleSlot = async (
     success: true,
   };
 };
+
+
+export const getAdminSchedules = async (
+  schoolId: string,
+  filters: {
+    classId?: string;
+    teacherId?: string;
+    room?: string;
+    dayOfWeek?: DayOfWeek;
+  }
+) => {
+  const { classId, teacherId, room, dayOfWeek } = filters;
+
+  const schedules = await prisma.schedule.findMany({
+    where: {
+      ...(dayOfWeek !== undefined && {
+        dayOfWeek,
+      }),
+
+      ...(room !== undefined && {
+        room: {
+          contains: room,
+          mode: "insensitive",
+        },
+      }),
+
+      teachingAssignment: {
+        schoolId,
+
+        ...(classId !== undefined && {
+          classId,
+        }),
+
+        ...(teacherId !== undefined && {
+          teacherId,
+        }),
+      },
+    },
+
+    include: {
+      teachingAssignment: {
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          class: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          teacher: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+
+    orderBy: [
+      {
+        dayOfWeek: "asc",
+      },
+      {
+        startTime: "asc",
+      },
+    ],
+  });
+
+  return schedules.map((s) => ({
+    id: s.id,
+
+    teachingAssignmentId: s.teachingAssignmentId,
+
+    dayOfWeek: s.dayOfWeek,
+
+    startTime: s.startTime,
+
+    endTime: s.endTime,
+
+    room: s.room || "N/A",
+
+    subject: {
+      id: s.teachingAssignment.subject.id,
+      name: s.teachingAssignment.subject.name,
+    },
+
+    class: {
+      id: s.teachingAssignment.class.id,
+      name: s.teachingAssignment.class.name,
+    },
+
+    teacher: {
+      id: s.teachingAssignment.teacher.id,
+      name: `${s.teachingAssignment.teacher.firstName} ${s.teachingAssignment.teacher.lastName}`,
+    },
+  }));
+};

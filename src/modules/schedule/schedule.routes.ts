@@ -6,6 +6,7 @@ import {
   getTeacherScheduleController,
   createScheduleController,
   deleteScheduleController,
+  getAdminSchedulesController,
 } from "./schedule.controller";
 
 const router = Router();
@@ -14,27 +15,36 @@ router.use(authenticate);
 
 // Student route
 router.get(
-  "/student/me/schedule",
+  "/student/me",
   authorize("STUDENT"),
   getStudentScheduleController
 );
 
 // Teacher routes (Supports ?day=SUNDAY for today's classes)
 router.get(
-  "/teacher/me/schedule",
+  "/teacher/me",
   authorize("TEACHER"),
   getTeacherScheduleController
 );
 
 // Admin routes
 router.post(
-  "/admin/schedules",
+  "/admin",
   authorize("ADMIN"),
   createScheduleController
 );
 
+
+// Admin: Fetch schedules with filters (?classId=...&teacherId=...&room=...&day=...)
+router.get(
+  "/admin",
+  authorize("ADMIN"),
+  getAdminSchedulesController
+);
+
+
 router.delete(
-  "/admin/schedules/:scheduleId",
+  "/admin/:scheduleId",
   authorize("ADMIN"),
   deleteScheduleController
 );
