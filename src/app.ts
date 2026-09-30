@@ -13,6 +13,7 @@ import profileRoutes from "./modules/profile/profile.routes";
 import studentPortalRoutes from "./modules/students/student-portal/student-class.routes";
 import scheduleRoutes from "./modules/schedule/schedule.routes";
 import teacherPortalRoutes from "./modules/teacher-dashboard/teacher-dashboard.routes";
+import studentOverviewRoutes from "./modules/student-dashboard/student-dashboard.routes";
 
 import { errorMiddleware } from "./middleware/errorHandler";
 import express from "express"
@@ -44,6 +45,7 @@ app.use("/api/teacher/me", teacherPortalRoutes);
 
 // student portal routes
 app.use("/api/student/me", studentPortalRoutes);
+app.use("/api/student/me", studentOverviewRoutes);
 
 
 
